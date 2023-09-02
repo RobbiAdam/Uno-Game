@@ -10,6 +10,8 @@ public interface ICard
     {
         get;
     }
+    bool IsWild { get; }
+
 }
 
 public interface IPlayer

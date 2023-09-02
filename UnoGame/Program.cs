@@ -5,13 +5,25 @@ class Program
     static int _numberOfPlayer;
     static GameController gameController = new();
 
-    static void Main(string[] args)
+    static void Main()
     {
-        _numberOfPlayer = InsertNumberOfPlayers();
-        ShowPlayerList();
+        // _numberOfPlayer = InsertNumberOfPlayers();
+        // ShowPlayerList();
 
-        Card drawnCard = gameController.DrawCard();
-        Console.WriteLine($"Drew a card: {drawnCard.CardColor} - {drawnCard.CardValue}");
+ for (int i = 0; i < 20; i++)
+        {
+            ICard drawnCard = gameController.DrawCard();
+
+            if (drawnCard.IsWild)
+            {
+                Console.WriteLine($"Drew a wild card: {drawnCard.CardValue}");
+            }
+            else
+            {
+                Console.WriteLine($"Drew a card: {drawnCard.CardColor} - {drawnCard.CardValue}");
+            }
+        }
+        
     }
 
     static int InsertNumberOfPlayers()
