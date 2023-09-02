@@ -2,9 +2,7 @@ namespace UnoGame;
 
 public class GameController
 {
-
     private List<IPlayer> PlayerList;
-
     public GameController()
     {
         PlayerList = new List<IPlayer>();
@@ -15,7 +13,6 @@ public class GameController
         PlayerList.Add(player);
     }
 
-
     public Card DrawCard()
     {
         Random random = new Random();
@@ -25,7 +22,6 @@ public class GameController
 
         return new Card { CardColor = randomColor, CardValue = randomValue };
     }
-
     public List<IPlayer> Players
     {
         get { return PlayerList; }
