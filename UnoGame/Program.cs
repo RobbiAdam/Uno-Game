@@ -7,23 +7,11 @@ class Program
 
     static void Main()
     {
-        // _numberOfPlayer = InsertNumberOfPlayers();
-        // ShowPlayerList();
+        _numberOfPlayer = InsertNumberOfPlayers();
 
- for (int i = 0; i < 20; i++)
-        {
-            ICard drawnCard = gameController.DrawCard();
-
-            if (drawnCard.IsWild)
-            {
-                Console.WriteLine($"Drew a wild card: {drawnCard.CardValue}");
-            }
-            else
-            {
-                Console.WriteLine($"Drew a card: {drawnCard.CardColor} - {drawnCard.CardValue}");
-            }
-        }
-        
+        ShowPlayerList();
+        gameController.DealStartingHands();
+        DisplayPlayerHands();
     }
 
     static int InsertNumberOfPlayers()
@@ -61,5 +49,24 @@ class Program
             }
         }
     }
+
+    static void DisplayPlayerHands()
+    {
+        Console.WriteLine("Players and their hands:");
+        foreach (IPlayer player in gameController.Players)
+        {
+            PlayerData playerData = gameController.GetPlayerData(player);
+            if (playerData != null)
+            {
+                Console.WriteLine($"{player.PlayerName} (ID: {player.PlayerId}):");
+                foreach (ICard card in playerData.PlayerHandList)
+                {
+                    Console.WriteLine($"  {card.CardColor} {card.CardValue}");
+                }
+            }
+        }
+    }
+
+
 
 }
