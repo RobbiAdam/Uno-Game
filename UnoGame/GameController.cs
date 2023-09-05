@@ -9,6 +9,8 @@ namespace UnoGame
         private List<IPlayer> PlayerList;
         private List<PlayerData> PlayerDataList;
         private Dictionary<CardValue, int> GeneratedCardDictionary;
+        private bool _isReversed = false;
+        private int _currentPlayerIndex = 0;
 
         public GameController()
         {
@@ -31,7 +33,6 @@ namespace UnoGame
         {
             get { return PlayerList; }
         }
-
         public PlayerData GetPlayerData(IPlayer player)
         {
             int _playerIndex = PlayerList.IndexOf(player);
@@ -41,20 +42,14 @@ namespace UnoGame
             }
             return null;
         }
-
-
-
         public ICard GenerateValidCard()
         {
             ICard generatedCard = null;
-
             do
             {
-
                 generatedCard = DrawCard();
 
             } while (!IsCardValidToGenerate(generatedCard));
-
 
             if (!generatedCard.IsWild)
             {
@@ -81,8 +76,8 @@ namespace UnoGame
                 maxCopiesAllowed = 4;
             }
 
-            int sameValueAndColorCount = PlayerDataList.SelectMany(pd => pd.PlayerHandList)
-                .Count(c => c.CardValue == card.CardValue && c.CardColor == card.CardColor);
+            int sameValueAndColorCount =
+            PlayerDataList.SelectMany(pd => pd.PlayerHandList).Count(c => c.CardValue == card.CardValue && c.CardColor == card.CardColor);
 
             return sameValueAndColorCount < maxCopiesAllowed;
         }
@@ -101,7 +96,6 @@ namespace UnoGame
                 return new Card { CardColor = randomColor, CardValue = randomValue };
             }
         }
-
         public void DealStartingHands()
         {
             foreach (IPlayer player in PlayerList)
@@ -111,13 +105,39 @@ namespace UnoGame
                 {
                     continue;
                 }
-
                 for (int i = 0; i < 27; i++)
                 {
                     ICard drawnCard = GenerateValidCard();
                     playerData.AddCardToHand(drawnCard);
                 }
             }
+        }
+        public IPlayer GetPlayerTurn()
+        {
+            if (PlayerList.Count == 0)
+            {
+                return null;
+            }
+            return PlayerList[_currentPlayerIndex];
+        }
+        public void NextPlayerTurn()
+        {
+            if (PlayerList.Count == 0)
+            {
+                return;
+            }
+            if (!_isReversed)
+            {
+                _currentPlayerIndex = (_currentPlayerIndex + 1) % PlayerList.Count;
+            }
+            else
+            {
+                _currentPlayerIndex = (_currentPlayerIndex - 1 + PlayerList.Count) % PlayerList.Count;
+            }
+        }
+        public void ReverseTurnDirection()
+        {
+            _isReversed = !_isReversed;
         }
     }
 }

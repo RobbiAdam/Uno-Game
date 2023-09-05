@@ -34,45 +34,45 @@ class Program
         return _numberOfPlayers;
     }
 
-static void ShowPlayerList()
-{
-    for (int playerId = 1; playerId <= _numberOfPlayer; playerId++)
+    static void ShowPlayerList()
     {
-        Console.WriteLine($"Enter the name for Player {playerId}");
-        string playerName = Console.ReadLine();
-
-        gameController.AddPlayer(new Player(playerId, playerName));
-    }
-    foreach (IPlayer player in gameController.Players)
-    {
-        Console.WriteLine($"Player ID: {player.PlayerId}, Player Name: {player.PlayerName}");
-    }
-}
-
-
-static void DisplayPlayerHands()
-{
-    Console.WriteLine("Players and their hands:");
-    foreach (IPlayer player in gameController.Players)
-    {
-        PlayerData playerData = gameController.GetPlayerData(player);
-        if (playerData != null)
+        for (int playerId = 1; playerId <= _numberOfPlayer; playerId++)
         {
-            Console.WriteLine($"{player.PlayerName} (ID: {player.PlayerId}):");
-            foreach (ICard card in playerData.PlayerHandList)
+            Console.WriteLine($"Enter the name for Player {playerId}");
+            string playerName = Console.ReadLine();
+
+            gameController.AddPlayer(new Player(playerId, playerName));
+        }
+        foreach (IPlayer player in gameController.Players)
+        {
+            Console.WriteLine($"Player ID: {player.PlayerId}, Player Name: {player.PlayerName}");
+        }
+    }
+
+
+    static void DisplayPlayerHands()
+    {
+        Console.WriteLine("Players and their hands:");
+        foreach (IPlayer player in gameController.Players)
+        {
+            PlayerData playerData = gameController.GetPlayerData(player);
+            if (playerData != null)
             {
-                if (card.CardValue == CardValue.Wild || card.CardValue == CardValue.WildDrawFour)
+                Console.WriteLine($"{player.PlayerName} (ID: {player.PlayerId}):");
+                foreach (ICard card in playerData.PlayerHandList)
                 {
-                    Console.WriteLine($"  {card.CardValue}");
-                }
-                else
-                {
-                    Console.WriteLine($"  {card.CardColor} {card.CardValue}");
+                    if (card.CardValue == CardValue.Wild || card.CardValue == CardValue.WildDrawFour)
+                    {
+                        Console.WriteLine($"  {card.CardValue}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"  {card.CardColor} {card.CardValue}");
+                    }
                 }
             }
         }
     }
-}
 
 
 

@@ -15,6 +15,5 @@ public class PlayerData
     {
         PlayerHandList.Add(card);
     }
-
     
 }

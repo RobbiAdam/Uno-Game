@@ -4,8 +4,8 @@ public class Card : ICard
 {
     private CardColor _cardColor;
     private CardValue _cardValue;
-    private bool _isWild; // Add this property
-
+    private bool _isWild; 
+    
     public CardColor CardColor
     {
         get => _cardColor;
