@@ -7,11 +7,18 @@ class Program
 
     static void Main()
     {
-        _numberOfPlayer = InsertNumberOfPlayers();
+            gameController.SetDiscardPile();
 
-        ShowPlayerList();
-        gameController.DealStartingHands();
-        DisplayPlayerHands();
+            ICard topDiscardCard = gameController.DiscardPileList.LastOrDefault();
+            if (topDiscardCard != null)
+            {
+                Console.WriteLine("Top card in the discard pile: " + topDiscardCard.CardColor + " " + topDiscardCard.CardValue);
+            }
+            else
+            {
+                Console.WriteLine("Discard pile is empty.");
+            }
+        
     }
 
     static int InsertNumberOfPlayers()

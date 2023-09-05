@@ -9,6 +9,7 @@ namespace UnoGame
         private List<IPlayer> PlayerList;
         private List<PlayerData> PlayerDataList;
         private Dictionary<CardValue, int> GeneratedCardDictionary;
+        internal List<ICard> DiscardPileList;
         private bool _isReversed = false;
         private int _currentPlayerIndex = 0;
 
@@ -17,6 +18,7 @@ namespace UnoGame
             PlayerList = new List<IPlayer>();
             PlayerDataList = new List<PlayerData>();
             GeneratedCardDictionary = new Dictionary<CardValue, int>();
+            DiscardPileList = new List<ICard>();
             foreach (CardValue value in Enum.GetValues(typeof(CardValue)))
             {
                 GeneratedCardDictionary[value] = 0;
@@ -42,12 +44,12 @@ namespace UnoGame
             }
             return null;
         }
-        public ICard GenerateValidCard()
+        public ICard DrawCard()
         {
             ICard generatedCard = null;
             do
             {
-                generatedCard = DrawCard();
+                generatedCard = GenerateCard();
 
             } while (!IsCardValidToGenerate(generatedCard));
 
@@ -61,27 +63,27 @@ namespace UnoGame
         }
         public bool IsCardValidToGenerate(ICard card)
         {
-            int maxCopiesAllowed = 0;
+            int _maxCopiesAllowed = 0;
 
             if (card.CardValue == CardValue.Zero)
             {
-                maxCopiesAllowed = 1;
+                _maxCopiesAllowed = 1;
             }
             else if (!card.IsWild)
             {
-                maxCopiesAllowed = 2;
+                _maxCopiesAllowed = 2;
             }
             else
             {
-                maxCopiesAllowed = 4;
+                _maxCopiesAllowed = 4;
             }
 
-            int sameValueAndColorCount =
+            int _sameValueAndColorCount =
             PlayerDataList.SelectMany(pd => pd.PlayerHandList).Count(c => c.CardValue == card.CardValue && c.CardColor == card.CardColor);
 
-            return sameValueAndColorCount < maxCopiesAllowed;
+            return _sameValueAndColorCount < _maxCopiesAllowed;
         }
-        public ICard DrawCard()
+        public ICard GenerateCard()
         {
             Random random = new Random();
             CardValue randomValue = (CardValue)random.Next(Enum.GetValues(typeof(CardValue)).Length);
@@ -105,13 +107,76 @@ namespace UnoGame
                 {
                     continue;
                 }
-                for (int i = 0; i < 27; i++)
+                for (int i = 0; i < 7; i++)
                 {
-                    ICard drawnCard = GenerateValidCard();
+                    ICard drawnCard = DrawCard();
                     playerData.AddCardToHand(drawnCard);
                 }
             }
         }
+        public void DrawCardToPlayerHand(IPlayer player)
+        {
+            PlayerData playerData = GetPlayerData(player);
+
+            if (playerData != null)
+            {
+                ICard drawnCard = DrawCard();
+                playerData.AddCardToHand(drawnCard);
+            }
+        }
+        public bool DiscardCard(IPlayer player, ICard card)
+        {
+            PlayerData playerData = GetPlayerData(player);
+
+            if (playerData != null)
+            {
+
+                if (IsCardValidToDiscard(card))
+                {
+
+                    if (playerData.PlayerHandList.Remove(card))
+                    {
+
+                        DiscardPileList.Add(card);
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+        private bool IsCardValidToDiscard(ICard card)
+        {
+            ICard topDiscardCard = DiscardPileList.LastOrDefault();
+            if (topDiscardCard == null)
+            {
+                return true;
+            }
+            if (card.CardColor == topDiscardCard.CardColor || card.CardValue == topDiscardCard.CardValue)
+            {
+                return true;
+            }
+
+            if (card.IsWild)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public void SetDiscardPile()
+        {
+            ICard drawnCard;
+
+            do
+            {
+                drawnCard = DrawCard();
+            } while (drawnCard.IsWild);
+
+            DiscardPileList.Add(drawnCard);
+        }
+
         public IPlayer GetPlayerTurn()
         {
             if (PlayerList.Count == 0)
