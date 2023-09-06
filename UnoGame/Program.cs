@@ -140,26 +140,30 @@ class Program
 
             if (currentPlayerData != null)
             {
+                Console.WriteLine("");
                 Console.WriteLine($"{currentPlayer.PlayerName}'s turn.");
                 DisplayCurrentPlayerHand(currentPlayer.PlayerName, currentPlayerData.PlayerHandList);
+                Console.WriteLine("");
 
                 bool _continueTakingAction = true;
 
                 while (_continueTakingAction)
                 {
                     DisplayTopCardOnDiscardPile();
-                    Console.WriteLine("Choose an action:");
+                    Console.WriteLine("");
+                    Console.WriteLine($"{currentPlayer.PlayerName} Choose an action:");
                     Console.WriteLine("1. Draw a card");
                     Console.WriteLine("2. Discard a card");
                     Console.WriteLine("3. Skip turn");
                     Console.WriteLine("4. End the game"); //force end
-
+                    Console.WriteLine("");
                     if (int.TryParse(Console.ReadLine(), out int choice))
                     {
                         switch (choice)
                         {
                             case 1:
                                 gameController.DrawCardToPlayerHand(currentPlayer);
+                                Console.WriteLine("");
                                 Console.WriteLine($"{currentPlayer.PlayerName} drew a card.");
                                 DisplayCurrentPlayerHand(currentPlayer.PlayerName, currentPlayerData.PlayerHandList);
                                 break;
@@ -200,6 +204,7 @@ class Program
     }
     static bool ChooseCardToDiscard(IPlayer player)
     {
+        Console.WriteLine("");
         Console.WriteLine($"{player.PlayerName}, choose a card to discard:");
         DisplayTopCardOnDiscardPile();
 
@@ -229,7 +234,7 @@ class Program
                 }
                 else
                 {
-                    Console.WriteLine("Invalid choice. You can't discard that card.");
+                    Console.WriteLine("You can't discard that card.");
                 }
             }
             else
@@ -244,6 +249,7 @@ class Program
 
         return false;
     }
+    
     static bool IsGameOver()
     {
         IPlayer currentPlayer = gameController.GetPlayerTurn();

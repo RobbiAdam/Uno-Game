@@ -19,10 +19,7 @@ namespace UnoGame
             PlayerDataList = new List<PlayerData>();
             GeneratedCardDictionary = new Dictionary<CardValue, int>();
             DiscardPileList = new List<ICard>();
-            foreach (CardValue value in Enum.GetValues(typeof(CardValue)))
-            {
-                GeneratedCardDictionary[value] = 0;
-            }
+
         }
 
         public void AddPlayer(IPlayer player)
@@ -96,7 +93,7 @@ namespace UnoGame
             {
                 _maxCopiesAllowed = 4;
             }
-
+            // Count how many cards with the same value and color exist in all player hands
             int _sameValueAndColorCount =
             PlayerDataList.SelectMany(pd => pd.PlayerHandList).Count(c => c.CardValue == card.CardValue && c.CardColor == card.CardColor);
 
@@ -149,11 +146,14 @@ namespace UnoGame
 
             if (playerData != null)
             {
-                if (IsActionCard(card))
-                {
-                    HandleActionCard(card);
-                }
-                else if (IsCardValidToDiscard(card))
+                // if (IsActionCard(card))
+                // {
+                //     HandleActionCard(card);
+                //     DiscardPileList.Add(card); // remove card to discard pile
+                //     return true;
+                // }
+                // else 
+                if (IsCardValidToDiscard(card))
                 {
                     if (playerData.PlayerHandList.Remove(card))
                     {
@@ -167,22 +167,14 @@ namespace UnoGame
         public bool IsCardValidToDiscard(ICard card)
         {
             ICard topDiscardCard = DiscardPileList.Last();
+
             if (topDiscardCard == null)
             {
                 return true;
             }
-            if (card.CardColor == topDiscardCard.CardColor || card.CardValue == topDiscardCard.CardValue)
-            {
-                return true;
-            }
-
-            if (card.IsWild)
-            {
-                return true;
-            }
-
-            return false;
+            return card.CardColor == topDiscardCard.CardColor || card.CardValue == topDiscardCard.CardValue;
         }
+
 
         private bool IsActionCard(ICard card)
         {
@@ -209,10 +201,6 @@ namespace UnoGame
                 DrawFourCardsNextPlayer();
             }
         }
-
-
-
-
         public void SetDiscardPile()
         {
             ICard drawnCard;
@@ -280,7 +268,6 @@ namespace UnoGame
                 }
             }
         }
-
         public void DrawFourCardsNextPlayer()
         {
             IPlayer nextPlayer = GetNextPlayer();
@@ -306,7 +293,6 @@ namespace UnoGame
                 }
             }
         }
-
         private bool IsValidCardColor(CardColor color)
         {
             return color == CardColor.Red || color == CardColor.Green || color == CardColor.Blue || color == CardColor.Yellow;
