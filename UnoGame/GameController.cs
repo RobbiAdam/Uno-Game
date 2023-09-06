@@ -44,6 +44,25 @@ namespace UnoGame
             }
             return null;
         }
+
+        private IPlayer GetNextPlayer()
+        {
+            if (PlayerList.Count == 0)
+            {
+                return null;
+            }
+            int _nextPlayerIndex;
+            if (!_isReversed)
+            {
+                _nextPlayerIndex = (_currentPlayerIndex + 1) % PlayerList.Count;
+            }
+            else
+            {
+                _nextPlayerIndex = (_currentPlayerIndex - 1 + PlayerList.Count) % PlayerList.Count;
+            }
+
+            return PlayerList[_nextPlayerIndex];
+        }
         public ICard DrawCard()
         {
             ICard generatedCard = null;
@@ -130,21 +149,49 @@ namespace UnoGame
 
             if (playerData != null)
             {
-
-                if (IsCardValidToDiscard(card))
+                if (IsActionCard(card))
                 {
-
+                    HandleActionCard(card);
+                }
+                else if (IsCardValidToDiscard(card))
+                {
                     if (playerData.PlayerHandList.Remove(card))
                     {
-
-                        DiscardPileList.Add(card);
+                        DiscardPileList.Add(card); // Place the card on the discard pile
                         return true;
                     }
                 }
             }
-
             return false;
         }
+
+        private bool IsActionCard(ICard card)
+        {
+            return card.CardValue == CardValue.Skip || card.CardValue == CardValue.Reverse ||
+                   card.CardValue == CardValue.DrawTwo || card.CardValue == CardValue.WildDrawFour;
+        }
+
+        private void HandleActionCard(ICard card)
+        {
+            if (card.CardValue == CardValue.Skip)
+            {
+                SkipNextPlayer();
+            }
+            else if (card.CardValue == CardValue.Reverse)
+            {
+                ReverseTurnOrder();
+            }
+            else if (card.CardValue == CardValue.DrawTwo)
+            {
+                DrawTwoCardsNextPlayer();
+            }
+            else if (card.CardValue == CardValue.WildDrawFour)
+            {
+                DrawFourCardsNextPlayer();
+            }
+        }
+
+
         private bool IsCardValidToDiscard(ICard card)
         {
             ICard topDiscardCard = DiscardPileList.LastOrDefault();
@@ -204,5 +251,78 @@ namespace UnoGame
         {
             _isReversed = !_isReversed;
         }
+        public void SkipNextPlayer()
+        {
+            IPlayer nextPlayer = GetNextPlayer();
+
+            if (IsValidPlayer(nextPlayer))
+            {
+                NextPlayerTurn(); // Skip the next player
+            }
+        }
+
+        public void ReverseTurnOrder()
+        {
+            ReverseTurnDirection();
+        }
+
+        public void DrawTwoCardsNextPlayer()
+        {
+            IPlayer nextPlayer = GetNextPlayer();
+
+            if (IsValidPlayer(nextPlayer))
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    ICard drawnCard = DrawCard();
+                    GetPlayerData(nextPlayer).AddCardToHand(drawnCard);
+                }
+            }
+        }
+
+        public void DrawFourCardsNextPlayer()
+        {
+            IPlayer nextPlayer = GetNextPlayer();
+
+            if (IsValidPlayer(nextPlayer))
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    ICard drawnCard = DrawCard();
+                    GetPlayerData(nextPlayer).AddCardToHand(drawnCard);
+                }
+            }
+        }
+        public void ChooseWildCardColor(IPlayer player, CardColor chosenColor)
+        {
+            ICard topDiscardCard = DiscardPileList.LastOrDefault();
+
+            if (topDiscardCard != null && topDiscardCard.IsWild)
+            {
+                if (IsValidPlayer(player) && IsValidCardColor(chosenColor))
+                {
+                    topDiscardCard.CardColor = chosenColor;
+                }
+            }
+        }
+
+        private bool IsValidCardColor(CardColor color)
+        {
+            return color == CardColor.Red || color == CardColor.Green || color == CardColor.Blue || color == CardColor.Yellow;
+        }
+
+        private bool IsValidPlayer(IPlayer player)
+        {
+
+            return PlayerList.Contains(player);
+        }
+
+        public bool CheckForWinner(IPlayer player)
+        {
+            PlayerData playerData = GetPlayerData(player);
+
+            return playerData != null && playerData.PlayerHandList.Count == 0;
+        }
+
     }
 }

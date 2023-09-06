@@ -5,6 +5,7 @@ public interface ICard
     CardColor CardColor
     {
         get;
+        set;
     }
     CardValue CardValue
     {

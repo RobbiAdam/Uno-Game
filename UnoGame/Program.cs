@@ -4,21 +4,17 @@ class Program
 {
     static int _numberOfPlayer;
     static GameController gameController = new();
+    bool _isGameOver = false;
 
     static void Main()
     {
-            gameController.SetDiscardPile();
+        _numberOfPlayer = InsertNumberOfPlayers();
+        ShowPlayerList();
+        gameController.DealStartingHands();
+        gameController.SetDiscardPile();
+        DisplayTopCardOnDiscardPile();
+        DisplayPlayerHands();
 
-            ICard topDiscardCard = gameController.DiscardPileList.LastOrDefault();
-            if (topDiscardCard != null)
-            {
-                Console.WriteLine("Top card in the discard pile: " + topDiscardCard.CardColor + " " + topDiscardCard.CardValue);
-            }
-            else
-            {
-                Console.WriteLine("Discard pile is empty.");
-            }
-        
     }
 
     static int InsertNumberOfPlayers()
@@ -80,6 +76,36 @@ class Program
             }
         }
     }
+
+    static void DisplayTopCardOnDiscardPile()
+    {
+        if (gameController.DiscardPileList.Count > 0)
+        {
+            ICard topCard = gameController.DiscardPileList.Last();
+            Console.WriteLine($"Top Card on Discard Pile: {topCard.CardColor} {topCard.CardValue}");
+        }
+        else
+        {
+            Console.WriteLine("Discard pile is empty.");
+        }
+    }
+
+    static void DisplayCurrentPlayerHand(string playerName, List<ICard> playerHandList)
+    {
+        Console.WriteLine($"{playerName}'s Hand:");
+        foreach (ICard card in playerHandList)
+        {
+            if (card.CardValue == CardValue.Wild || card.CardValue == CardValue.WildDrawFour)
+            {
+                Console.WriteLine($"  {card.CardValue}");
+            }
+            else
+            {
+                Console.WriteLine($"  {card.CardColor} {card.CardValue}");
+            }
+        }
+    }
+
 
 
 
