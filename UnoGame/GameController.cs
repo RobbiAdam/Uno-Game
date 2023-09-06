@@ -19,6 +19,10 @@ namespace UnoGame
             PlayerDataList = new List<PlayerData>();
             GeneratedCardDictionary = new Dictionary<CardValue, int>();
             DiscardPileList = new List<ICard>();
+            foreach(CardValue value in Enum.GetValues(typeof(CardValue)))
+            {
+                GeneratedCardDictionary[value] = 0;
+            }
 
         }
 
@@ -71,13 +75,12 @@ namespace UnoGame
 
             if (!generatedCard.IsWild)
             {
-
                 GeneratedCardDictionary[generatedCard.CardValue]++;
             }
 
             return generatedCard;
         }
-        public bool IsCardValidToGenerate(ICard card)
+        public bool IsCardValidToGenerate(ICard card) // Return maxcopies from Enum
         {
             int _maxCopiesAllowed = 0;
 
@@ -123,7 +126,7 @@ namespace UnoGame
                 {
                     continue;
                 }
-                for (int i = 0; i < 7; i++)
+                for (int i = 0; i < 7; i++) //throw hard coded number to enum or config file
                 {
                     ICard drawnCard = DrawCard();
                     playerData.AddCardToHand(drawnCard);
@@ -176,13 +179,13 @@ namespace UnoGame
         }
 
 
-        private bool IsActionCard(ICard card)
+        private bool IsActionCard(ICard card) //LinQ 
         {
             return card.CardValue == CardValue.Skip || card.CardValue == CardValue.Reverse ||
                    card.CardValue == CardValue.DrawTwo || card.CardValue == CardValue.WildDrawFour;
         }
 
-        private void HandleActionCard(ICard card)
+        private void HandleActionCard(ICard card) //Switch Case
         {
             if (card.CardValue == CardValue.Skip)
             {
@@ -201,7 +204,7 @@ namespace UnoGame
                 DrawFourCardsNextPlayer();
             }
         }
-        public void SetDiscardPile()
+        public void SetDiscardPile() //return discarded
         {
             ICard drawnCard;
 
