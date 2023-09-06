@@ -157,11 +157,30 @@ namespace UnoGame
                 {
                     if (playerData.PlayerHandList.Remove(card))
                     {
-                        DiscardPileList.Add(card); // Place the card on the discard pile
+                        DiscardPileList.Add(card); // remove card to discard pile
                         return true;
                     }
                 }
             }
+            return false;
+        }
+        public bool IsCardValidToDiscard(ICard card)
+        {
+            ICard topDiscardCard = DiscardPileList.Last();
+            if (topDiscardCard == null)
+            {
+                return true;
+            }
+            if (card.CardColor == topDiscardCard.CardColor || card.CardValue == topDiscardCard.CardValue)
+            {
+                return true;
+            }
+
+            if (card.IsWild)
+            {
+                return true;
+            }
+
             return false;
         }
 
@@ -192,25 +211,7 @@ namespace UnoGame
         }
 
 
-        private bool IsCardValidToDiscard(ICard card)
-        {
-            ICard topDiscardCard = DiscardPileList.LastOrDefault();
-            if (topDiscardCard == null)
-            {
-                return true;
-            }
-            if (card.CardColor == topDiscardCard.CardColor || card.CardValue == topDiscardCard.CardValue)
-            {
-                return true;
-            }
 
-            if (card.IsWild)
-            {
-                return true;
-            }
-
-            return false;
-        }
 
         public void SetDiscardPile()
         {
