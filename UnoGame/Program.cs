@@ -4,7 +4,7 @@ class Program
 {
     static int _numberOfPlayer;
     static GameController gameController = new();
-    static bool _isGameOver = false;
+    static bool _gameStatus = false;
 
     static void Main()
     {
@@ -16,13 +16,13 @@ class Program
         DisplayPlayerHands();
 
         // Game loop
-        while (!_isGameOver)
+        while (!gameController.IsGameOver() && !_gameStatus)
         {
             TakeAction();
 
-            if (IsGameOver())
+            if (gameController.IsGameOver() || _gameStatus)
             {
-                _isGameOver = true;
+
                 Console.WriteLine("Game over!");
 
             }
@@ -79,8 +79,6 @@ class Program
             Console.WriteLine($"Player ID: {player.PlayerId}, Player Name: {player.PlayerName}");
         }
     }
-
-
 
     static void DisplayPlayerHands()
     {
@@ -188,7 +186,7 @@ class Program
                                 _continueTakingAction = false;
                                 break;
                             case 4:
-                                _isGameOver = true; // End Game
+                                _gameStatus = true; // End Game
                                 _continueTakingAction = false;
                                 break;
                             default:
@@ -246,7 +244,11 @@ class Program
                         Console.WriteLine($"{player.PlayerName} discarded an action card!");
                         DisplayActionCardMessage(selectedCard, player.PlayerName);
 
-                        // Handle the action card logic here if needed
+                    }
+                    else
+                    if (gameController.IsWildCard(selectedCard))
+                    {
+                        DisplayWildCardAction(selectedCard, player.PlayerName);
                     }
 
 
@@ -291,23 +293,40 @@ class Program
         }
     }
 
-
-    static bool IsGameOver()
+    static void DisplayWildCardAction(ICard card, string playerName)
     {
-        IPlayer currentPlayer = gameController.GetPlayerTurn();
-
-        if (currentPlayer != null)
+        if (card.CardValue == CardValue.Wild)
         {
-            PlayerData currentPlayerData = gameController.GetPlayerData(currentPlayer);
-
-            if (currentPlayerData != null && currentPlayerData.HandCard.Count == 0)
-            {
-                return true; // If player has no card in hand
-            }
+            Console.WriteLine($"{playerName} played a Wild card.");
+            CardColor chosenColor = ChooseWildCardColor();
+            Console.WriteLine($"{playerName} chose the color: {chosenColor}");
+            // Here you can handle the Wild card with the chosen color.
         }
-
-        return false;
+        else if (card.CardValue == CardValue.WildDrawFour)
+        {
+            Console.WriteLine($"{playerName} played a Wild Draw Four card.");
+            CardColor chosenColor = ChooseWildCardColor();
+            Console.WriteLine($"{playerName} chose the color: {chosenColor}");
+            // Here you can handle the Wild Draw Four card with the chosen color.
+        }
     }
+    static CardColor ChooseWildCardColor()
+    {
+        Console.WriteLine("Choose a color for the Wild card:");
+        Console.WriteLine("1. Red");
+        Console.WriteLine("2. Blue");
+        Console.WriteLine("3. Green");
+        Console.WriteLine("4. Yellow");
 
-
+        if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 1 && choice <= 4)
+        {
+            // Convert the player's choice to a CardColor enum value
+            return (CardColor)(choice - 1);
+        }
+        else
+        {
+            Console.WriteLine("Invalid choice. Please choose a valid color.");
+            return ChooseWildCardColor(); // Recursive call to ensure a valid choice
+        }
+    }
 }

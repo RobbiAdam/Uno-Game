@@ -12,6 +12,7 @@ namespace UnoGame
         private int _currentPlayerIndex = 0;
         private int _defaultStartingHand = 7;
 
+
         public GameController()
         {
             _playerDataList = new List<PlayerData>();
@@ -156,8 +157,14 @@ namespace UnoGame
             {
                 HandleActionCard(card);
             }
+            else if (IsWildCard(card))
+            {
+                HandleWildCard(card);
+            }
+
             return true;
         }
+
 
         public bool IsCardValidToDiscard(ICard card)
         {
@@ -174,10 +181,16 @@ namespace UnoGame
 
         public bool IsActionCard(ICard card)
         {
-            CardValue[] _actionCardValues = { CardValue.Skip, CardValue.Reverse, CardValue.DrawTwo, CardValue.Wild, CardValue.WildDrawFour };
+            CardValue[] _actionCardValues = { CardValue.Skip, CardValue.Reverse, CardValue.DrawTwo, };
 
             return _actionCardValues.Contains(card.CardValue);
         }
+        public bool IsWildCard(ICard card)
+        {
+            CardValue[] _wildCardValues = { CardValue.Wild, CardValue.WildDrawFour };
+            return _wildCardValues.Contains(card.CardValue);
+        }
+
         private CardValue HandleActionCard(ICard card)
         {
             switch (card.CardValue)
@@ -192,6 +205,16 @@ namespace UnoGame
                     DrawTwoCardsNextPlayer();
                     SkipNextPlayer();
                     return CardValue.DrawTwo;
+
+                default:
+                    throw new ArgumentException("Invalid Action Card");
+            }
+        }
+
+        private CardValue HandleWildCard(ICard card)
+        {
+            switch (card.CardValue)
+            {
                 case CardValue.Wild:
                     // Allow the player to choose the color for the wild card
                     return (CardValue)card.CardColor;
@@ -200,10 +223,13 @@ namespace UnoGame
                     DrawFourCardsNextPlayer();
                     SkipNextPlayer();
                     return (CardValue)card.CardColor;
+
                 default:
-                    throw new ArgumentException("Invalid Action Card");
+                    throw new ArgumentException("Invalid wild card");
             }
         }
+
+
         public ICard SetDiscardPile()
         {
             ICard drawnCard;
@@ -293,12 +319,19 @@ namespace UnoGame
         {
             return _playerDataList.Any(playerData => playerData.Player == player);
         }
-        public bool CheckForWinner(IPlayer player)
-        {
-            PlayerData playerData = GetPlayerData(player);
 
-            return playerData != null && playerData.HandCard.Count == 0;
+        public bool IsGameOver()
+        {
+            foreach (PlayerData playerData in _playerDataList)
+            {
+                if (playerData.HandCard.Count == 0)
+                {
+                    return true;//Game Over if hand card empty
+                }
+            }
+            return false; //continue
         }
+
 
     }
 }
