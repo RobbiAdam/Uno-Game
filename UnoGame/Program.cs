@@ -126,10 +126,7 @@ class Program
             return $"{card.CardColor} {card.CardValue}";
         }
     }
-
-
-
-
+    
     static void TakeAction()
     {
         IPlayer currentPlayer = gameController.GetPlayerTurn();

@@ -8,26 +8,23 @@ namespace UnoGame
     {
         private List<IPlayer> _playerList;
         private List<PlayerData> _playerDataList;
-        private Dictionary<CardValue, int> GeneratedCardDictionary;
         internal List<ICard> _discardPileList;
         private bool _isReversed = false;
         private int _currentPlayerIndex = 0;
+        private int _defaultStartingHand = 7;
 
         public GameController()
         {
             _playerList = new List<IPlayer>();
             _playerDataList = new List<PlayerData>();
-            GeneratedCardDictionary = new Dictionary<CardValue, int>();
             _discardPileList = new List<ICard>();
-            foreach (CardValue value in Enum.GetValues(typeof(CardValue)))
-            {
-                GeneratedCardDictionary[value] = 0;
-            }
         }
-        public void AddPlayer(IPlayer player)
+        public PlayerData AddPlayer(IPlayer player)
         {
+            PlayerData playerData = new PlayerData(player);
             _playerList.Add(player);
-            _playerDataList.Add(new PlayerData(player));
+            _playerDataList.Add(playerData);
+            return playerData;
         }
 
         public List<IPlayer> Players
@@ -43,7 +40,6 @@ namespace UnoGame
             }
             return null;
         }
-
         private IPlayer GetNextPlayer()
         {
             if (_playerList.Count == 0)
@@ -68,16 +64,12 @@ namespace UnoGame
             do
             {
                 generatedCard = GenerateCard();
-
-            } while (!IsCardValidToGenerate(generatedCard));
-
-            if (!generatedCard.IsWild)
-            {
-                GeneratedCardDictionary[generatedCard.CardValue]++;
             }
+            while (!IsCardValidToGenerate(generatedCard));
 
             return generatedCard;
         }
+
         public int GetMaxCopiesAllowed(CardValue cardValue)
         {
             switch (cardValue)
@@ -132,14 +124,14 @@ namespace UnoGame
                 {
                     continue;
                 }
-                for (int i = 0; i < 7; i++) //throw hard coded number to enum or config file
+                for (int i = 0; i < _defaultStartingHand; i++)
                 {
                     ICard drawnCard = DrawCard();
                     playerData.AddCardToHand(drawnCard);
                 }
             }
         }
-        public void DrawCardToPlayerHand(IPlayer player)
+        public ICard DrawCardToPlayerHand(IPlayer player)
         {
             PlayerData playerData = GetPlayerData(player);
 
@@ -147,32 +139,26 @@ namespace UnoGame
             {
                 ICard drawnCard = DrawCard();
                 playerData.AddCardToHand(drawnCard);
+                return drawnCard;
             }
+
+            return null; //
         }
+
         public bool DiscardCard(IPlayer player, ICard card)
         {
             PlayerData playerData = GetPlayerData(player);
 
-            if (playerData != null)
+            if (playerData == null || !IsCardValidToDiscard(card))
             {
-                // if (IsActionCard(card))
-                // {
-                //     HandleActionCard(card);
-                //     _discardPileList.Add(card); // remove card to discard pile
-                //     return true;
-                // }
-                // else 
-                if (IsCardValidToDiscard(card))
-                {
-                    if (playerData._playerHandList.Remove(card))
-                    {
-                        _discardPileList.Add(card); // remove card to discard pile
-                        return true;
-                    }
-                }
+                return false;
             }
-            return false;
+
+            playerData._playerHandList.Remove(card);
+            _discardPileList.Add(card);
+            return true;
         }
+
         public bool IsCardValidToDiscard(ICard card)
         {
             ICard topDiscardCard = _discardPileList.Last();
@@ -187,36 +173,37 @@ namespace UnoGame
 
         private bool IsActionCard(ICard card)
         {
-            CardValue[] actionCardValues = { CardValue.Skip, CardValue.Reverse, CardValue.DrawTwo, CardValue.WildDrawFour };
+            CardValue[] _actionCardValues = { CardValue.Skip, CardValue.Reverse, CardValue.DrawTwo, CardValue.Wild, CardValue.WildDrawFour };
 
-            return actionCardValues.Contains(card.CardValue);
+            return _actionCardValues.Contains(card.CardValue);
         }
 
-
-        private void HandleActionCard(ICard card)
+        private ActionCard HandleActionCard(ICard card)
         {
             switch (card.CardValue)
             {
                 case CardValue.Skip:
                     SkipNextPlayer();
-                    break;
+                    return ActionCard.Skip;
                 case CardValue.Reverse:
                     ReverseTurnOrder();
-                    break;
+                    return ActionCard.Reverse;
                 case CardValue.DrawTwo:
                     DrawTwoCardsNextPlayer();
-                    break;
+                    return ActionCard.DrawTwo;
+                case CardValue.Wild:
+                    DrawFourCardsNextPlayer();
+                    return ActionCard.WildCard;
                 case CardValue.WildDrawFour:
                     DrawFourCardsNextPlayer();
-                    break;
-
+                    return ActionCard.WildCardFour;
                 default:
 
-                    break;
+                    throw new ArgumentException();
             }
         }
 
-        public void SetDiscardPile() //return discarded
+        public ICard SetDiscardPile()
         {
             ICard drawnCard;
 
@@ -226,7 +213,10 @@ namespace UnoGame
             } while (drawnCard.IsWild);
 
             _discardPileList.Add(drawnCard);
+
+            return drawnCard;
         }
+
 
         public IPlayer GetPlayerTurn()
         {
@@ -236,12 +226,13 @@ namespace UnoGame
             }
             return _playerList[_currentPlayerIndex];
         }
-        public void NextPlayerTurn()
+        public IPlayer NextPlayerTurn()
         {
             if (_playerList.Count == 0)
             {
-                return;
+                return null;
             }
+
             if (!_isReversed)
             {
                 _currentPlayerIndex = (_currentPlayerIndex + 1) % _playerList.Count;
@@ -250,11 +241,16 @@ namespace UnoGame
             {
                 _currentPlayerIndex = (_currentPlayerIndex - 1 + _playerList.Count) % _playerList.Count;
             }
+
+            return _playerList[_currentPlayerIndex];
         }
-        public void ReverseTurnDirection()
+
+        public bool ReverseTurnDirection()
         {
             _isReversed = !_isReversed;
+            return _isReversed;
         }
+
         public void SkipNextPlayer()
         {
             IPlayer nextPlayer = GetNextPlayer();
