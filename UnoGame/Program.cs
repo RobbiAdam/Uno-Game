@@ -75,7 +75,7 @@ class Program
             if (playerData != null)
             {
                 Console.WriteLine($"{player.PlayerName} (ID: {player.PlayerId}):");
-                foreach (ICard card in playerData._playerHandList)
+                foreach (ICard card in playerData.HandCard)
                 {
                     if (card.CardValue == CardValue.Wild || card.CardValue == CardValue.WildDrawFour)
                     {
@@ -102,19 +102,17 @@ class Program
             Console.WriteLine("Discard pile is empty.");
         }
     }
-    static void DisplayCurrentPlayerHand(string playerName, List<ICard> playerHandList)
+    static void DisplayCurrentPlayerHand(string playerName, List<ICard> HandCard)
     {
         Console.WriteLine($"{playerName}'s Hand:");
 
-        for (int i = 0; i < playerHandList.Count; i++)
+        for (int i = 0; i < HandCard.Count; i++)
         {
-            ICard card = playerHandList[i];
+            ICard card = HandCard[i];
             string cardDescription = GetCardDescription(card);
             Console.WriteLine($"{i + 1}. {cardDescription}");
         }
     }
-
-
     static string GetCardDescription(ICard card)
     {
         if (card.CardValue == CardValue.Wild || card.CardValue == CardValue.WildDrawFour)
@@ -126,7 +124,6 @@ class Program
             return $"{card.CardColor} {card.CardValue}";
         }
     }
-    
     static void TakeAction()
     {
         IPlayer currentPlayer = gameController.GetPlayerTurn();
@@ -139,7 +136,7 @@ class Program
             {
                 Console.WriteLine("");
                 Console.WriteLine($"{currentPlayer.PlayerName}'s turn.");
-                DisplayCurrentPlayerHand(currentPlayer.PlayerName, currentPlayerData._playerHandList);
+                DisplayCurrentPlayerHand(currentPlayer.PlayerName, currentPlayerData.HandCard);
                 Console.WriteLine("");
 
                 bool _continueTakingAction = true;
@@ -162,7 +159,7 @@ class Program
                                 gameController.DrawCardToPlayerHand(currentPlayer);
                                 Console.WriteLine("");
                                 Console.WriteLine($"{currentPlayer.PlayerName} drew a card.");
-                                DisplayCurrentPlayerHand(currentPlayer.PlayerName, currentPlayerData._playerHandList);
+                                DisplayCurrentPlayerHand(currentPlayer.PlayerName, currentPlayerData.HandCard);
                                 break;
                             case 2:
                                 if (ChooseCardToDiscard(currentPlayer))
@@ -208,20 +205,20 @@ class Program
         PlayerData playerData = gameController.GetPlayerData(player);
         if (playerData != null)
         {
-            List<ICard> playerHandList = playerData._playerHandList;
+            List<ICard> HandCard = playerData.HandCard;
 
-            for (int i = 0; i < playerHandList.Count; i++)
+            for (int i = 0; i < HandCard.Count; i++)
             {
-                ICard card = playerHandList[i];
+                ICard card = HandCard[i];
                 string cardDescription = GetCardDescription(card);
                 Console.WriteLine($"{i + 1}. {cardDescription}");
             }
 
 
             Console.Write("Enter the number of the card to discard: ");
-            if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 1 && choice <= playerHandList.Count)
+            if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 1 && choice <= HandCard.Count)
             {
-                ICard selectedCard = playerHandList[choice - 1];
+                ICard selectedCard = HandCard[choice - 1];
 
                 if (gameController.IsCardValidToDiscard(selectedCard))
                 {
@@ -246,7 +243,7 @@ class Program
 
         return false;
     }
-    
+
     static bool IsGameOver()
     {
         IPlayer currentPlayer = gameController.GetPlayerTurn();
@@ -255,7 +252,7 @@ class Program
         {
             PlayerData currentPlayerData = gameController.GetPlayerData(currentPlayer);
 
-            if (currentPlayerData != null && currentPlayerData._playerHandList.Count == 0)
+            if (currentPlayerData != null && currentPlayerData.HandCard.Count == 0)
             {
                 return true; // If player has no card in hand
             }

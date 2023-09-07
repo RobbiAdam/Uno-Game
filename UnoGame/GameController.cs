@@ -89,7 +89,7 @@ namespace UnoGame
             int maxCopiesAllowed = GetMaxCopiesAllowed(card.CardValue);
 
             // Count how many cards with the same value and color exist in all player hands
-            int sameValueAndColorCountInHands = _playerDataList.SelectMany(pd => pd._playerHandList)
+            int sameValueAndColorCountInHands = _playerDataList.SelectMany(pd => pd.HandCard)
                 .Count(c => c.CardValue == card.CardValue && c.CardColor == card.CardColor);
 
             // Count how many cards with the same value and color exist in the discard pile
@@ -154,8 +154,13 @@ namespace UnoGame
                 return false;
             }
 
-            playerData._playerHandList.Remove(card);
+            playerData.HandCard.Remove(card);
             _discardPileList.Add(card);
+
+            if (IsActionCard(card))
+            {
+                HandleActionCard(card);
+            }
             return true;
         }
 
@@ -186,19 +191,20 @@ namespace UnoGame
                     SkipNextPlayer();
                     return ActionCard.Skip;
                 case CardValue.Reverse:
-                    ReverseTurnOrder();
+                    ReverseTurnDirection();
                     return ActionCard.Reverse;
                 case CardValue.DrawTwo:
                     DrawTwoCardsNextPlayer();
+                    SkipNextPlayer();
                     return ActionCard.DrawTwo;
                 case CardValue.Wild:
                     DrawFourCardsNextPlayer();
                     return ActionCard.WildCard;
                 case CardValue.WildDrawFour:
                     DrawFourCardsNextPlayer();
+                    SkipNextPlayer();
                     return ActionCard.WildCardFour;
                 default:
-
                     throw new ArgumentException();
             }
         }
@@ -251,7 +257,7 @@ namespace UnoGame
             return _isReversed;
         }
 
-        public void SkipNextPlayer()
+        public IPlayer SkipNextPlayer()
         {
             IPlayer nextPlayer = GetNextPlayer();
 
@@ -259,11 +265,8 @@ namespace UnoGame
             {
                 NextPlayerTurn(); // Skip the next player
             }
-        }
 
-        public void ReverseTurnOrder()
-        {
-            ReverseTurnDirection();
+            return nextPlayer;
         }
 
         public void DrawTwoCardsNextPlayer()
@@ -292,18 +295,19 @@ namespace UnoGame
                 }
             }
         }
-        public void ChooseWildCardColor(IPlayer player, CardColor chosenColor)
+        public bool ChooseWildCardColor(IPlayer player, CardColor chosenColor)
         {
-            ICard topDiscardCard = _discardPileList.LastOrDefault();
+            ICard topDiscardCard = _discardPileList.Last();
 
-            if (topDiscardCard != null && topDiscardCard.IsWild)
+            if (topDiscardCard != null && topDiscardCard.IsWild && IsValidPlayer(player) && IsValidCardColor(chosenColor))
             {
-                if (IsValidPlayer(player) && IsValidCardColor(chosenColor))
-                {
-                    topDiscardCard.CardColor = chosenColor;
-                }
+                topDiscardCard.CardColor = chosenColor;
+                return true;
             }
+
+            return false;
         }
+
         private bool IsValidCardColor(CardColor color)
         {
             return color == CardColor.Red || color == CardColor.Green || color == CardColor.Blue || color == CardColor.Yellow;
@@ -319,7 +323,7 @@ namespace UnoGame
         {
             PlayerData playerData = GetPlayerData(player);
 
-            return playerData != null && playerData._playerHandList.Count == 0;
+            return playerData != null && playerData.HandCard.Count == 0;
         }
 
     }

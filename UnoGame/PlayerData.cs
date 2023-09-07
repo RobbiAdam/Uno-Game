@@ -3,7 +3,7 @@ namespace UnoGame;
 public class PlayerData
 {
     private IPlayer _player;
-    public List<ICard> _playerHandList;
+    private List<ICard> _playerHandList;
 
     public PlayerData(IPlayer player)
     {
@@ -11,10 +11,15 @@ public class PlayerData
         _playerHandList = new List<ICard>();
     }
 
+    public List<ICard> HandCard => _playerHandList;
+    
+
     public void AddCardToHand(ICard card)
     {
-        _playerHandList.Add(card);
+        HandCard.Add(card);
     }
+
+
     
     
 }
