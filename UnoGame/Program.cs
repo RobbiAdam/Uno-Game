@@ -54,16 +54,32 @@ class Program
     {
         for (int playerId = 1; playerId <= _numberOfPlayer; playerId++)
         {
-            Console.WriteLine($"Enter the name for Player {playerId}");
-            string playerName = Console.ReadLine();
+            string playerName;
+            bool isNameTaken;
+
+            do
+            {
+                Console.WriteLine($"Enter the name for Player {playerId}");
+                playerName = Console.ReadLine();
+
+                isNameTaken = gameController.IsPlayerNameTaken(playerName);
+
+                if (isNameTaken)
+                {
+                    Console.WriteLine("Player name is already taken. Please choose a different name.");
+                }
+
+            } while (isNameTaken);
 
             gameController.AddPlayer(new Player(playerId, playerName));
         }
+
         foreach (IPlayer player in gameController.Players)
         {
             Console.WriteLine($"Player ID: {player.PlayerId}, Player Name: {player.PlayerName}");
         }
     }
+
 
 
     static void DisplayPlayerHands()
@@ -148,7 +164,7 @@ class Program
                     Console.WriteLine($"{currentPlayer.PlayerName} Choose an action:");
                     Console.WriteLine("1. Draw a card");
                     Console.WriteLine("2. Discard a card");
-                    Console.WriteLine("3. Skip turn");
+                    Console.WriteLine("3. End turn");
                     Console.WriteLine("4. End the game"); //force end
                     Console.WriteLine("");
                     if (int.TryParse(Console.ReadLine(), out int choice))
@@ -205,25 +221,35 @@ class Program
         PlayerData playerData = gameController.GetPlayerData(player);
         if (playerData != null)
         {
-            List<ICard> HandCard = playerData.HandCard;
+            List<ICard> handCards = playerData.HandCard;
 
-            for (int i = 0; i < HandCard.Count; i++)
+            for (int i = 0; i < handCards.Count; i++)
             {
-                ICard card = HandCard[i];
+                ICard card = handCards[i];
                 string cardDescription = GetCardDescription(card);
                 Console.WriteLine($"{i + 1}. {cardDescription}");
             }
 
-
             Console.Write("Enter the number of the card to discard: ");
-            if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 1 && choice <= HandCard.Count)
+            if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 1 && choice <= handCards.Count)
             {
-                ICard selectedCard = HandCard[choice - 1];
+                ICard selectedCard = handCards[choice - 1];
 
                 if (gameController.IsCardValidToDiscard(selectedCard))
                 {
                     gameController.DiscardCard(player, selectedCard);
                     Console.WriteLine($"{player.PlayerName} discarded: {GetCardDescription(selectedCard)}");
+
+                    // Check if the discarded card is an action card
+                    if (gameController.IsActionCard(selectedCard))
+                    {
+                        Console.WriteLine($"{player.PlayerName} discarded an action card!");
+                        DisplayActionCardMessage(selectedCard, player.PlayerName);
+
+                        // Handle the action card logic here if needed
+                    }
+
+
                     return true;
                 }
                 else
@@ -243,6 +269,28 @@ class Program
 
         return false;
     }
+
+
+    static void DisplayActionCardMessage(ICard card, string playerName)
+    {
+        switch (card.CardValue)
+        {
+            case CardValue.Skip:
+                Console.WriteLine($"Next Player Turn is skipped.");
+                break;
+            case CardValue.Reverse:
+                Console.WriteLine($"Player {playerName} reverses the turn order.");
+                break;
+            case CardValue.DrawTwo:
+                Console.WriteLine($"Next Player draws two cards and their turn is skipped.");
+                break;
+            default:
+
+                Console.WriteLine($"Action card played by {playerName}: {card.CardValue}");
+                break;
+        }
+    }
+
 
     static bool IsGameOver()
     {

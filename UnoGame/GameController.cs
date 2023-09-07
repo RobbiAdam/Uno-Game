@@ -35,6 +35,12 @@ namespace UnoGame
             return _playerDataList.FirstOrDefault(pd => pd.Player == player);
         }
 
+        public bool IsPlayerNameTaken(string playerName)
+        {
+            return _playerDataList.Any(playerData => playerData.Player.PlayerName == playerName);
+        }
+
+
         private IPlayer GetNextPlayer()
         {
             if (_playerDataList.Count == 0)
@@ -67,7 +73,7 @@ namespace UnoGame
             return generatedCard;
         }
 
-        public int GetMaxCopiesAllowed(CardValue cardValue)
+        private int GetMaxCopiesAllowed(CardValue cardValue)
         {
             switch (cardValue)
             {
@@ -146,10 +152,10 @@ namespace UnoGame
             playerData.HandCard.Remove(card);
             _discardPileList.Add(card);
 
-            // if (IsActionCard(card))
-            // {
-            //     HandleActionCard(card);
-            // }
+            if (IsActionCard(card))
+            {
+                HandleActionCard(card);
+            }
             return true;
         }
 
@@ -164,36 +170,39 @@ namespace UnoGame
 
             return card.CardColor == topDiscardCard.CardColor || card.CardValue == topDiscardCard.CardValue;
         }
-        private bool IsActionCard(ICard card)
+
+        
+        public bool IsActionCard(ICard card)
         {
             CardValue[] _actionCardValues = { CardValue.Skip, CardValue.Reverse, CardValue.DrawTwo, CardValue.Wild, CardValue.WildDrawFour };
 
             return _actionCardValues.Contains(card.CardValue);
         }
-        // private CardValue HandleActionCard(ICard card)
-        // {
-        //     switch (card.CardValue)
-        //     {
-        //         case CardValue.Skip:
-        //             SkipNextPlayer();
-        //             return CardValue.Skip;
-        //         case CardValue.Reverse:
-        //             ReverseTurnDirection();
-        //             return CardValue.Reverse;
-        //         case CardValue.DrawTwo:
-        //             DrawTwoCardsNextPlayer();
-        //             SkipNextPlayer();
-        //             return CardValue.DrawTwo;
-        //         case CardValue.Wild:
-        //             // Allow the player to choose the color for the wild card
-        //             return ChooseWildCardColorForActionCard(card);
-        //         case CardValue.WildDrawFour:
-        //             // Allow the player to choose the color for the wild card
-        //             return ChooseWildCardColorForActionCard(card);
-        //         default:
-        //             throw new ArgumentException("Invalid Action Card");
-        //     }
-        // }
+        private CardValue HandleActionCard(ICard card)
+        {
+            switch (card.CardValue)
+            {
+                case CardValue.Skip:
+                    SkipNextPlayer();
+                    return CardValue.Skip;
+                case CardValue.Reverse:
+                    ReverseTurnDirection();
+                    return CardValue.Reverse;
+                case CardValue.DrawTwo:
+                    DrawTwoCardsNextPlayer();
+                    SkipNextPlayer();
+                    return CardValue.DrawTwo;
+                case CardValue.Wild:
+                    // Allow the player to choose the color for the wild card
+                    return (CardValue)card.CardColor;
+                case CardValue.WildDrawFour:
+                    // Allow the player to choose the color for the wild card
+                    DrawFourCardsNextPlayer();
+                    return (CardValue)card.CardColor;
+                default:
+                    throw new ArgumentException("Invalid Action Card");
+            }
+        }
         public ICard SetDiscardPile()
         {
             ICard drawnCard;
@@ -277,21 +286,6 @@ namespace UnoGame
                     GetPlayerData(nextPlayer).AddCardToHand(drawnCard);
                 }
             }
-        }
-
-
-        private CardValue ChooseWildCardColorForActionCard(ICard card)
-        {
-            // Implement logic here to choose the color for wild cards
-            // You can prompt the player to choose a color or choose it randomly
-            // For example, you can use a dialog or a random color generator
-            // Replace the return statement with your logic
-            return CardValue.Wild; // Change this to your chosen color logic
-        }
-
-        private bool IsValidCardColor(CardColor color)
-        {
-            return color == CardColor.Red || color == CardColor.Green || color == CardColor.Blue || color == CardColor.Yellow;
         }
 
         private bool IsValidPlayer(IPlayer player)
