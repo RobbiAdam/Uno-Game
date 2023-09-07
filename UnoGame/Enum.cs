@@ -14,11 +14,3 @@ public enum CardValue
     Skip, Reverse, DrawTwo, Wild, WildDrawFour
 }
 
-public enum ActionCard
-{
-    Skip,
-    Reverse,
-    DrawTwo,
-    WildCard,
-    WildCardFour
-}

@@ -92,9 +92,9 @@ class Program
 
     static void DisplayTopCardOnDiscardPile()
     {
-        if (gameController._discardPileList.Count > 0)
+        if (gameController.DiscardedPile.Count > 0)
         {
-            ICard topCard = gameController._discardPileList.Last();
+            ICard topCard = gameController.DiscardedPile.Last();
             Console.WriteLine($"Top Card on Discard Pile: {topCard.CardColor} {topCard.CardValue}");
         }
         else

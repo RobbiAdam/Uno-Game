@@ -13,11 +13,16 @@ public class PlayerData
 
     public List<ICard> HandCard => _playerHandList;
     public IPlayer Player => _player;
-    
+
 
     public void AddCardToHand(ICard card)
     {
         HandCard.Add(card);
     }
-    
+    public IPlayer GetPlayer()
+    {
+        return _player;
+    }
+
+
 }

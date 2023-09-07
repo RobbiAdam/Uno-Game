@@ -7,7 +7,7 @@ namespace UnoGame
     public class GameController
     {
         private List<PlayerData> _playerDataList;
-        internal List<ICard> _discardPileList;
+        private List<ICard> _discardPileList;
         private bool _isReversed = false;
         private int _currentPlayerIndex = 0;
         private int _defaultStartingHand = 7;
@@ -23,6 +23,7 @@ namespace UnoGame
             _playerDataList.Add(playerData);
             return playerData;
         }
+        public List<ICard> DiscardedPile => _discardPileList;
 
         public List<IPlayer> Players
         {
@@ -130,7 +131,6 @@ namespace UnoGame
                 playerData.AddCardToHand(drawnCard);
                 return drawnCard;
             }
-
             return null; //
         }
 
@@ -157,10 +157,11 @@ namespace UnoGame
         {
             ICard topDiscardCard = _discardPileList.Last();
 
-            if (topDiscardCard == null)
+            if (card.IsWild)
             {
                 return true;
             }
+
             return card.CardColor == topDiscardCard.CardColor || card.CardValue == topDiscardCard.CardValue;
         }
         private bool IsActionCard(ICard card)
@@ -169,27 +170,27 @@ namespace UnoGame
 
             return _actionCardValues.Contains(card.CardValue);
         }
-        private ActionCard HandleActionCard(ICard card)
+        private CardValue HandleActionCard(ICard card)
         {
             switch (card.CardValue)
             {
                 case CardValue.Skip:
                     SkipNextPlayer();
-                    return ActionCard.Skip;
+                    return CardValue.Skip;
                 case CardValue.Reverse:
                     ReverseTurnDirection();
-                    return ActionCard.Reverse;
+                    return CardValue.Reverse;
                 case CardValue.DrawTwo:
                     DrawTwoCardsNextPlayer();
                     SkipNextPlayer();
-                    return ActionCard.DrawTwo;
+                    return CardValue.DrawTwo;
                 case CardValue.Wild:
                     DrawFourCardsNextPlayer();
-                    return ActionCard.WildCard;
+                    return CardValue.Wild;
                 case CardValue.WildDrawFour:
                     DrawFourCardsNextPlayer();
                     SkipNextPlayer();
-                    return ActionCard.WildCardFour;
+                    return CardValue.WildDrawFour;
                 default:
                     throw new ArgumentException("Invalid Action Card");
             }
