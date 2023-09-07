@@ -75,7 +75,7 @@ class Program
             if (playerData != null)
             {
                 Console.WriteLine($"{player.PlayerName} (ID: {player.PlayerId}):");
-                foreach (ICard card in playerData.PlayerHandList)
+                foreach (ICard card in playerData._playerHandList)
                 {
                     if (card.CardValue == CardValue.Wild || card.CardValue == CardValue.WildDrawFour)
                     {
@@ -92,9 +92,9 @@ class Program
 
     static void DisplayTopCardOnDiscardPile()
     {
-        if (gameController.DiscardPileList.Count > 0)
+        if (gameController._discardPileList.Count > 0)
         {
-            ICard topCard = gameController.DiscardPileList.Last();
+            ICard topCard = gameController._discardPileList.Last();
             Console.WriteLine($"Top Card on Discard Pile: {topCard.CardColor} {topCard.CardValue}");
         }
         else
@@ -142,7 +142,7 @@ class Program
             {
                 Console.WriteLine("");
                 Console.WriteLine($"{currentPlayer.PlayerName}'s turn.");
-                DisplayCurrentPlayerHand(currentPlayer.PlayerName, currentPlayerData.PlayerHandList);
+                DisplayCurrentPlayerHand(currentPlayer.PlayerName, currentPlayerData._playerHandList);
                 Console.WriteLine("");
 
                 bool _continueTakingAction = true;
@@ -165,7 +165,7 @@ class Program
                                 gameController.DrawCardToPlayerHand(currentPlayer);
                                 Console.WriteLine("");
                                 Console.WriteLine($"{currentPlayer.PlayerName} drew a card.");
-                                DisplayCurrentPlayerHand(currentPlayer.PlayerName, currentPlayerData.PlayerHandList);
+                                DisplayCurrentPlayerHand(currentPlayer.PlayerName, currentPlayerData._playerHandList);
                                 break;
                             case 2:
                                 if (ChooseCardToDiscard(currentPlayer))
@@ -211,7 +211,7 @@ class Program
         PlayerData playerData = gameController.GetPlayerData(player);
         if (playerData != null)
         {
-            List<ICard> playerHandList = playerData.PlayerHandList;
+            List<ICard> playerHandList = playerData._playerHandList;
 
             for (int i = 0; i < playerHandList.Count; i++)
             {
@@ -258,7 +258,7 @@ class Program
         {
             PlayerData currentPlayerData = gameController.GetPlayerData(currentPlayer);
 
-            if (currentPlayerData != null && currentPlayerData.PlayerHandList.Count == 0)
+            if (currentPlayerData != null && currentPlayerData._playerHandList.Count == 0)
             {
                 return true; // If player has no card in hand
             }
