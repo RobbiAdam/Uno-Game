@@ -6,7 +6,7 @@ namespace UnoGame
 {
     public class GameController
     {
-        private List<IPlayer> _playerList;
+        // private List<IPlayer> _playerList;
         private List<PlayerData> _playerDataList;
         internal List<ICard> _discardPileList;
         private bool _isReversed = false;
@@ -15,49 +15,49 @@ namespace UnoGame
 
         public GameController()
         {
-            _playerList = new List<IPlayer>();
+            // _playerList = new List<IPlayer>();
             _playerDataList = new List<PlayerData>();
             _discardPileList = new List<ICard>();
         }
         public PlayerData AddPlayer(IPlayer player)
         {
             PlayerData playerData = new PlayerData(player);
-            _playerList.Add(player);
+            // _playerList.Add(player);
             _playerDataList.Add(playerData);
             return playerData;
         }
 
         public List<IPlayer> Players
         {
-            get { return _playerList; }
+            get { return _playerDataList.Select(playerData => playerData.Player).ToList(); }
         }
+
+
         public PlayerData GetPlayerData(IPlayer player)
         {
-            int _playerIndex = _playerList.IndexOf(player);
-            if (_playerIndex != -1 && _playerIndex < _playerDataList.Count)
-            {
-                return _playerDataList[_playerIndex];
-            }
-            return null;
+            return _playerDataList.FirstOrDefault(pd => pd.Player == player);
         }
+
         private IPlayer GetNextPlayer()
         {
-            if (_playerList.Count == 0)
+            if (_playerDataList.Count == 0)
             {
                 return null;
             }
-            int _nextPlayerIndex;
+
+            int nextPlayerIndex;
             if (!_isReversed)
             {
-                _nextPlayerIndex = (_currentPlayerIndex + 1) % _playerList.Count;
+                nextPlayerIndex = (_currentPlayerIndex + 1) % _playerDataList.Count;
             }
             else
             {
-                _nextPlayerIndex = (_currentPlayerIndex - 1 + _playerList.Count) % _playerList.Count;
+                nextPlayerIndex = (_currentPlayerIndex - 1 + _playerDataList.Count) % _playerDataList.Count;
             }
 
-            return _playerList[_nextPlayerIndex];
+            return _playerDataList[nextPlayerIndex].Player;
         }
+
         public ICard DrawCard()
         {
             ICard generatedCard = null;
@@ -117,13 +117,8 @@ namespace UnoGame
         }
         public void DealStartingHands()
         {
-            foreach (IPlayer player in _playerList)
+            foreach (PlayerData playerData in _playerDataList)
             {
-                PlayerData playerData = GetPlayerData(player);
-                if (playerData == null)
-                {
-                    continue;
-                }
                 for (int i = 0; i < _defaultStartingHand; i++)
                 {
                     ICard drawnCard = DrawCard();
@@ -131,6 +126,7 @@ namespace UnoGame
                 }
             }
         }
+
         public ICard DrawCardToPlayerHand(IPlayer player)
         {
             PlayerData playerData = GetPlayerData(player);
@@ -205,7 +201,7 @@ namespace UnoGame
                     SkipNextPlayer();
                     return ActionCard.WildCardFour;
                 default:
-                    throw new ArgumentException();
+                    throw new ArgumentException("Invalid Action Card");
             }
         }
 
@@ -226,30 +222,35 @@ namespace UnoGame
 
         public IPlayer GetPlayerTurn()
         {
-            if (_playerList.Count == 0)
+            if (_playerDataList.Count == 0)
             {
                 return null;
             }
-            return _playerList[_currentPlayerIndex];
+
+            PlayerData currentPlayerData = _playerDataList[_currentPlayerIndex];
+            return currentPlayerData.Player;
         }
+
         public IPlayer NextPlayerTurn()
         {
-            if (_playerList.Count == 0)
+            if (_playerDataList.Count == 0)
             {
                 return null;
             }
 
             if (!_isReversed)
             {
-                _currentPlayerIndex = (_currentPlayerIndex + 1) % _playerList.Count;
+                _currentPlayerIndex = (_currentPlayerIndex + 1) % _playerDataList.Count;
             }
             else
             {
-                _currentPlayerIndex = (_currentPlayerIndex - 1 + _playerList.Count) % _playerList.Count;
+                _currentPlayerIndex = (_currentPlayerIndex - 1 + _playerDataList.Count) % _playerDataList.Count;
             }
 
-            return _playerList[_currentPlayerIndex];
+            PlayerData nextPlayerData = _playerDataList[_currentPlayerIndex];
+            return nextPlayerData.Player;
         }
+
 
         public bool ReverseTurnDirection()
         {
@@ -315,9 +316,9 @@ namespace UnoGame
 
         private bool IsValidPlayer(IPlayer player)
         {
-
-            return _playerList.Contains(player);
+            return _playerDataList.Any(playerData => playerData.Player == player);
         }
+
 
         public bool CheckForWinner(IPlayer player)
         {
