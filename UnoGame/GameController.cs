@@ -171,7 +171,7 @@ namespace UnoGame
             return card.CardColor == topDiscardCard.CardColor || card.CardValue == topDiscardCard.CardValue;
         }
 
-        
+
         public bool IsActionCard(ICard card)
         {
             CardValue[] _actionCardValues = { CardValue.Skip, CardValue.Reverse, CardValue.DrawTwo, CardValue.Wild, CardValue.WildDrawFour };
@@ -198,6 +198,7 @@ namespace UnoGame
                 case CardValue.WildDrawFour:
                     // Allow the player to choose the color for the wild card
                     DrawFourCardsNextPlayer();
+                    SkipNextPlayer();
                     return (CardValue)card.CardColor;
                 default:
                     throw new ArgumentException("Invalid Action Card");
