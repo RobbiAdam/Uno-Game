@@ -11,7 +11,7 @@ class Program
         _numberOfPlayer = InsertNumberOfPlayers();
         ShowPlayerList();
         gameController.DealStartingHands();
-        gameController.SetDiscardPile();
+        gameController.InitialDiscardPile();
         DisplayTopCardOnDiscardPile();
         DisplayPlayerHands();
 

@@ -104,15 +104,26 @@ namespace UnoGame
         public ICard GenerateCard()
         {
             Random random = new Random();
-            CardValue randomValue = (CardValue)random.Next(Enum.GetValues(typeof(CardValue)).Length);
+            CardValue randomValue;
+            CardColor randomColor;
+
+            // Generate a random CardValue
+            randomValue = (CardValue)random.Next(Enum.GetValues(typeof(CardValue)).Length);
 
             if (randomValue == CardValue.Wild || randomValue == CardValue.WildDrawFour)
             {
-                return new Card { CardValue = randomValue, IsWild = true };
+                // For wild cards, set CardColor to None
+                return new Card { CardValue = randomValue, CardColor = CardColor.Blank, IsWild = true };
             }
             else
             {
-                CardColor randomColor = (CardColor)random.Next(Enum.GetValues(typeof(CardColor)).Length);
+                // For other cards, generate a random CardColor (excluding None)
+                do
+                {
+                    randomColor = (CardColor)random.Next(Enum.GetValues(typeof(CardColor)).Length);
+                }
+                while (randomColor == CardColor.Blank);
+
                 return new Card { CardColor = randomColor, CardValue = randomValue };
             }
         }
@@ -230,7 +241,7 @@ namespace UnoGame
         }
 
 
-        public ICard SetDiscardPile()
+        public ICard InitialDiscardPile()
         {
             ICard drawnCard;
 
