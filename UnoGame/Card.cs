@@ -1,27 +1,32 @@
 namespace UnoGame
 {
-public class Card : ICard
-{
-    private CardColor _cardColor;
-    private CardValue _cardValue;
-    private bool _isWild; 
-    
-    public CardColor CardColor
+    public class Card : ICard
     {
-        get => _cardColor;
-        set => _cardColor = value;
-    }
+        private CardColor _cardColor;
+        private CardValue _cardValue;
+        private bool _isWild;
 
-    public CardValue CardValue
-    {
-        get => _cardValue;
-        set => _cardValue = value;
-    }
+        public CardColor CardColor
+        {
+            get => _cardColor;
+            set => _cardColor = value;
+        }
 
-    public bool IsWild
-    {
-        get => _isWild;
-        set => _isWild = value;
+
+
+        public CardValue CardValue
+        {
+            get => _cardValue;
+            set => _cardValue = value;
+        }
+
+        public bool IsWild
+        {
+            get => _isWild;
+            set => _isWild = value;
+        }
+
+
     }
 }
-}
+

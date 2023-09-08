@@ -152,7 +152,7 @@ namespace UnoGame
             return null; //
         }
 
-        public bool DiscardCard(IPlayer player, ICard card)
+        public bool DiscardCard(IPlayer player, ICard card, int choice)
         {
             PlayerData playerData = GetPlayerData(player);
 
@@ -170,7 +170,7 @@ namespace UnoGame
             }
             else if (IsWildCard(card))
             {
-                HandleWildCard(card);
+                HandleWildCard(card, choice);
             }
 
             return true;
@@ -222,18 +222,18 @@ namespace UnoGame
             }
         }
 
-        private CardValue HandleWildCard(ICard card)
+        public void  HandleWildCard(ICard card, int choice)
         {
             switch (card.CardValue)
             {
                 case CardValue.Wild:
-                    // Allow the player to choose the color for the wild card
-                    return (CardValue)card.CardColor;
+                    card.CardColor = ChangeWildCardColor(card, choice);
+                    break;
                 case CardValue.WildDrawFour:
-                    // Allow the player to choose the color for the wild card
+                    ChangeWildCardColor(card, choice);
                     DrawFourCardsNextPlayer();
                     SkipNextPlayer();
-                    return (CardValue)card.CardColor;
+                    break;
 
                 default:
                     throw new ArgumentException("Invalid wild card");
@@ -323,6 +323,23 @@ namespace UnoGame
                     ICard drawnCard = DrawCard();
                     GetPlayerData(nextPlayer).AddCardToHand(drawnCard);
                 }
+            }
+        }
+
+        public CardColor ChangeWildCardColor(ICard wildCard, int choice)
+        {
+            switch(choice)
+            {
+                case 1:
+                return CardColor.Red;
+                case 2:
+                return CardColor.Green;
+                case 3:
+                return CardColor.Blue;
+                case 4:
+                return CardColor.Yellow;
+                default:
+                throw new ArgumentException("Invalid Color");
             }
         }
 

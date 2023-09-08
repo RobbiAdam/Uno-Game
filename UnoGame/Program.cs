@@ -8,28 +8,36 @@ class Program
 
     static void Main()
     {
+        SetupGame();
+        PlayGame();
+        EndGame();
+    }
+
+    static void SetupGame()
+    {
         _numberOfPlayer = InsertNumberOfPlayers();
         ShowPlayerList();
         gameController.DealStartingHands();
         gameController.InitialDiscardPile();
-        DisplayTopCardOnDiscardPile();
         DisplayPlayerHands();
+        DisplayTopCardOnDiscardPile();
+    }
 
-        // Game loop
+    static void PlayGame()
+    {
         while (!gameController.IsGameOver() && !_gameStatus)
         {
             TakeAction();
-
-            if (gameController.IsGameOver() || _gameStatus)
-            {
-
-                Console.WriteLine("Game over!");
-
-            }
+            Console.WriteLine("");
             gameController.NextPlayerTurn();
         }
+
     }
 
+    static void EndGame()
+    {
+        Console.WriteLine("Game over!");
+    }
     static int InsertNumberOfPlayers()
     {
         int _numberOfPlayers = 0;
@@ -54,15 +62,15 @@ class Program
     {
         for (int playerId = 1; playerId <= _numberOfPlayer; playerId++)
         {
-            string playerName;
+            string _playerName;
             bool isNameTaken;
 
             do
             {
                 Console.WriteLine($"Enter the name for Player {playerId}");
-                playerName = Console.ReadLine();
+                _playerName = Console.ReadLine();
 
-                isNameTaken = gameController.IsPlayerNameTaken(playerName);
+                isNameTaken = gameController.IsPlayerNameTaken(_playerName);
 
                 if (isNameTaken)
                 {
@@ -71,11 +79,12 @@ class Program
 
             } while (isNameTaken);
 
-            gameController.AddPlayer(new Player(playerId, playerName));
+            gameController.AddPlayer(new Player(playerId, _playerName));
         }
 
         foreach (IPlayer player in gameController.Players)
         {
+            Console.WriteLine("");
             Console.WriteLine($"Player ID: {player.PlayerId}, Player Name: {player.PlayerName}");
         }
     }
@@ -83,33 +92,33 @@ class Program
     static void DisplayPlayerHands()
     {
         Console.WriteLine("Players and their hands:");
+
         foreach (IPlayer player in gameController.Players)
         {
             PlayerData playerData = gameController.GetPlayerData(player);
-            if (playerData != null)
+
+            if (playerData == null)
             {
-                Console.WriteLine($"{player.PlayerName} (ID: {player.PlayerId}):");
-                foreach (ICard card in playerData.HandCard)
-                {
-                    if (card.CardValue == CardValue.Wild || card.CardValue == CardValue.WildDrawFour)
-                    {
-                        Console.WriteLine($"  {card.CardValue}");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"  {card.CardColor} {card.CardValue}");
-                    }
-                }
+                Console.WriteLine("No current player data.");
+                continue;
+            }
+
+            Console.WriteLine($"{player.PlayerName} (ID: {player.PlayerId}):");
+
+            foreach (ICard card in playerData.HandCard)
+            {
+                string cardDescription = GetCardDescription(card);
+                Console.WriteLine($"  {cardDescription}");
             }
         }
     }
-
     static void DisplayTopCardOnDiscardPile()
     {
         if (gameController.DiscardedPile.Count > 0)
         {
             ICard topCard = gameController.DiscardedPile.Last();
             Console.WriteLine($"Top Card on Discard Pile: {topCard.CardColor} {topCard.CardValue}");
+            Console.WriteLine("");
         }
         else
         {
@@ -118,6 +127,7 @@ class Program
     }
     static void DisplayCurrentPlayerHand(string playerName, List<ICard> HandCard)
     {
+        Console.WriteLine("");
         Console.WriteLine($"{playerName}'s Hand:");
 
         for (int i = 0; i < HandCard.Count; i++)
@@ -142,137 +152,118 @@ class Program
     {
         IPlayer currentPlayer = gameController.GetPlayerTurn();
 
-        if (currentPlayer != null)
+        if (currentPlayer == null)
         {
-            PlayerData currentPlayerData = gameController.GetPlayerData(currentPlayer);
+            Console.WriteLine("No current player.");
+            return;
+        }
 
-            if (currentPlayerData != null)
+        PlayerData currentPlayerData = gameController.GetPlayerData(currentPlayer);
+
+        if (currentPlayerData == null)
+        {
+            Console.WriteLine("No current player data.");
+            return;
+        }
+
+        Console.WriteLine($"{currentPlayer.PlayerName}'s turn.");
+        DisplayCurrentPlayerHand(currentPlayer.PlayerName, currentPlayerData.HandCard);
+
+        while (true)
+        {
+            DisplayTopCardOnDiscardPile();
+            Console.WriteLine($"{currentPlayer.PlayerName} Choose an action:");
+            Console.WriteLine("1. Draw a card");
+            Console.WriteLine("2. Discard a card");
+            Console.WriteLine("3. End turn");
+            Console.WriteLine("4. End the game");
+
+            if (int.TryParse(Console.ReadLine(), out int choice))
             {
-                Console.WriteLine("");
-                Console.WriteLine($"{currentPlayer.PlayerName}'s turn.");
-                DisplayCurrentPlayerHand(currentPlayer.PlayerName, currentPlayerData.HandCard);
-                Console.WriteLine("");
-
-                bool _continueTakingAction = true;
-
-                while (_continueTakingAction)
+                switch (choice)
                 {
-                    DisplayTopCardOnDiscardPile();
-                    Console.WriteLine("");
-                    Console.WriteLine($"{currentPlayer.PlayerName} Choose an action:");
-                    Console.WriteLine("1. Draw a card");
-                    Console.WriteLine("2. Discard a card");
-                    Console.WriteLine("3. End turn");
-                    Console.WriteLine("4. End the game"); //force end
-                    Console.WriteLine("");
-                    if (int.TryParse(Console.ReadLine(), out int choice))
-                    {
-                        switch (choice)
+                    case 1:
+                        gameController.DrawCardToPlayerHand(currentPlayer);
+                        Console.WriteLine($"{currentPlayer.PlayerName} drew a card.");
+                        DisplayCurrentPlayerHand(currentPlayer.PlayerName, currentPlayerData.HandCard);
+                        break;
+                    case 2:
+                        if (ChooseCardToDiscard(currentPlayer))
                         {
-                            case 1:
-                                gameController.DrawCardToPlayerHand(currentPlayer);
-                                Console.WriteLine("");
-                                Console.WriteLine($"{currentPlayer.PlayerName} drew a card.");
-                                DisplayCurrentPlayerHand(currentPlayer.PlayerName, currentPlayerData.HandCard);
-                                break;
-                            case 2:
-                                if (ChooseCardToDiscard(currentPlayer))
-                                {
-                                    _continueTakingAction = false;
-                                }
-                                break;
-
-                            case 3:
-                                _continueTakingAction = false;
-                                break;
-                            case 4:
-                                _gameStatus = true; // End Game
-                                _continueTakingAction = false;
-                                break;
-                            default:
-                                Console.WriteLine("Invalid choice. Please choose a valid action.");
-                                break;
+                            return;
                         }
-                    }
-                    else
-                    {
-                        Console.WriteLine("Invalid choice. Please enter a valid action number.");
-                    }
+                        break;
+                    case 3:
+                    Console.WriteLine($"{currentPlayer.PlayerName}'s ending their turn");
+                        return;
+                    case 4:
+                        _gameStatus = true; // End Game
+                        return;
+                    default:
+                        Console.WriteLine("Invalid choice. Please choose a valid action.");
+                        break;
                 }
             }
             else
             {
-                Console.WriteLine("No current player data.");
+                Console.WriteLine("Invalid choice. Please enter a valid action number.");
             }
         }
-        else
-        {
-            Console.WriteLine("No current player.");
-        }
     }
+
     static bool ChooseCardToDiscard(IPlayer player)
     {
+        PlayerData playerData = gameController.GetPlayerData(player);
+
+        if (playerData == null)
+        {
+            Console.WriteLine("No current player data.");
+            return false;
+        }
+
+        List<ICard> handCards = playerData.HandCard;
+
         Console.WriteLine("");
         Console.WriteLine($"{player.PlayerName}, choose a card to discard:");
         DisplayTopCardOnDiscardPile();
+        
 
-        PlayerData playerData = gameController.GetPlayerData(player);
-        if (playerData != null)
+        for (int i = 0; i < handCards.Count; i++)
         {
-            List<ICard> handCards = playerData.HandCard;
+            ICard card = handCards[i];
+            string cardDescription = GetCardDescription(card);
+            Console.WriteLine($"{i + 1}. {cardDescription}");
+        }
 
-            for (int i = 0; i < handCards.Count; i++)
+        if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 1 && choice <= handCards.Count)
+        {
+            ICard selectedCard = handCards[choice - 1];
+
+            if (gameController.IsCardValidToDiscard(selectedCard))
             {
-                ICard card = handCards[i];
-                string cardDescription = GetCardDescription(card);
-                Console.WriteLine($"{i + 1}. {cardDescription}");
-            }
+                gameController.DiscardCard(player, selectedCard, choice);
+                Console.WriteLine($"{player.PlayerName} discarded: {GetCardDescription(selectedCard)}");
 
-            Console.Write("Enter the number of the card to discard: ");
-            if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 1 && choice <= handCards.Count)
-            {
-                ICard selectedCard = handCards[choice - 1];
-
-                if (gameController.IsCardValidToDiscard(selectedCard))
+                if (gameController.IsActionCard(selectedCard))
                 {
-                    gameController.DiscardCard(player, selectedCard);
-                    Console.WriteLine($"{player.PlayerName} discarded: {GetCardDescription(selectedCard)}");
-
-                    // Check if the discarded card is an action card
-                    if (gameController.IsActionCard(selectedCard))
-                    {
-                        Console.WriteLine($"{player.PlayerName} discarded an action card!");
-                        DisplayActionCardMessage(selectedCard, player.PlayerName);
-
-                    }
-                    else
-                    if (gameController.IsWildCard(selectedCard))
-                    {
-                        DisplayWildCardAction(selectedCard, player.PlayerName);
-                    }
-
-
-                    return true;
+                    Console.WriteLine($"{player.PlayerName} discarded an action card!");
+                    DisplayActionCardMessage(selectedCard, player.PlayerName);
                 }
-                else
-                {
-                    Console.WriteLine("You can't discard that card.");
-                }
+
+                return true;
             }
             else
             {
-                Console.WriteLine("Invalid input. Please enter a valid card number.");
+                Console.WriteLine("You can't discard that card.");
             }
         }
         else
         {
-            Console.WriteLine("No current player data.");
+            Console.WriteLine("Invalid input. Please enter a valid card number.");
         }
 
         return false;
     }
-
-
     static void DisplayActionCardMessage(ICard card, string playerName)
     {
         switch (card.CardValue)
@@ -293,40 +284,5 @@ class Program
         }
     }
 
-    static void DisplayWildCardAction(ICard card, string playerName)
-    {
-        if (card.CardValue == CardValue.Wild)
-        {
-            Console.WriteLine($"{playerName} played a Wild card.");
-            CardColor chosenColor = ChooseWildCardColor();
-            Console.WriteLine($"{playerName} chose the color: {chosenColor}");
-            // Here you can handle the Wild card with the chosen color.
-        }
-        else if (card.CardValue == CardValue.WildDrawFour)
-        {
-            Console.WriteLine($"{playerName} played a Wild Draw Four card.");
-            CardColor chosenColor = ChooseWildCardColor();
-            Console.WriteLine($"{playerName} chose the color: {chosenColor}");
-            // Here you can handle the Wild Draw Four card with the chosen color.
-        }
-    }
-    static CardColor ChooseWildCardColor()
-    {
-        Console.WriteLine("Choose a color for the Wild card:");
-        Console.WriteLine("1. Red");
-        Console.WriteLine("2. Blue");
-        Console.WriteLine("3. Green");
-        Console.WriteLine("4. Yellow");
 
-        if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 1 && choice <= 4)
-        {
-            // Convert the player's choice to a CardColor enum value
-            return (CardColor)(choice - 1);
-        }
-        else
-        {
-            Console.WriteLine("Invalid choice. Please choose a valid color.");
-            return ChooseWildCardColor(); // Recursive call to ensure a valid choice
-        }
-    }
 }
