@@ -11,6 +11,8 @@ namespace UnoGame
         private bool _isReversed = false;
         private int _currentPlayerIndex = 0;
         private int _defaultStartingHand = 7;
+        private int _drawTwo = 2;
+        private int _drawFour = 4;
 
 
         public GameController()
@@ -48,7 +50,6 @@ namespace UnoGame
             {
                 return null;
             }
-
             int nextPlayerIndex;
             if (!_isReversed)
             {
@@ -106,18 +107,15 @@ namespace UnoGame
             Random random = new Random();
             CardValue randomValue;
             CardColor randomColor;
-
-            // Generate a random CardValue
             randomValue = (CardValue)random.Next(Enum.GetValues(typeof(CardValue)).Length);
 
             if (randomValue == CardValue.Wild || randomValue == CardValue.WildDrawFour)
             {
-                // For wild cards, set CardColor to None
+
                 return new Card { CardValue = randomValue, CardColor = CardColor.Blank, IsWild = true };
             }
             else
             {
-                // For other cards, generate a random CardColor (excluding None)
                 do
                 {
                     randomColor = (CardColor)random.Next(Enum.GetValues(typeof(CardColor)).Length);
@@ -161,17 +159,18 @@ namespace UnoGame
                 return false;
             }
 
-            playerData.HandCard.Remove(card);
-            _discardPileList.Add(card);
+            //  if (IsWildCard(card))
+            // {
+            //     HandleWildCard(card, choice);
+            // }
 
             if (IsActionCard(card))
             {
                 HandleActionCard(card);
             }
-            else if (IsWildCard(card))
-            {
-                HandleWildCard(card, choice);
-            }
+
+            playerData.HandCard.Remove(card);
+            _discardPileList.Add(card);
 
             return true;
         }
@@ -222,23 +221,23 @@ namespace UnoGame
             }
         }
 
-        public void  HandleWildCard(ICard card, int choice)
-        {
-            switch (card.CardValue)
-            {
-                case CardValue.Wild:
-                    card.CardColor = ChangeWildCardColor(card, choice);
-                    break;
-                case CardValue.WildDrawFour:
-                    ChangeWildCardColor(card, choice);
-                    DrawFourCardsNextPlayer();
-                    SkipNextPlayer();
-                    break;
+        // public void  HandleWildCard(ICard card, int choice)
+        // {
+        //     switch (card.CardValue)
+        //     {
+        //         case CardValue.Wild:
+        //             card.CardColor = ChangeWildCardColor(card, choice);
+        //             break;
+        //         case CardValue.WildDrawFour:
+        //             ChangeWildCardColor(card, choice);
+        //             DrawFourCardsNextPlayer();
+        //             SkipNextPlayer();
+        //             break;
 
-                default:
-                    throw new ArgumentException("Invalid wild card");
-            }
-        }
+        //         default:
+        //             throw new ArgumentException("Invalid wild card");
+        //     }
+        // }
 
 
         public ICard InitialDiscardPile()
@@ -305,7 +304,7 @@ namespace UnoGame
 
             if (IsValidPlayer(nextPlayer))
             {
-                for (int i = 0; i < 2; i++)
+                for (int i = 0; i < _drawTwo; i++)
                 {
                     ICard drawnCard = DrawCard();
                     GetPlayerData(nextPlayer).AddCardToHand(drawnCard);
@@ -318,7 +317,7 @@ namespace UnoGame
 
             if (IsValidPlayer(nextPlayer))
             {
-                for (int i = 0; i < 4; i++)
+                for (int i = 0; i < _drawFour; i++)
                 {
                     ICard drawnCard = DrawCard();
                     GetPlayerData(nextPlayer).AddCardToHand(drawnCard);
@@ -326,22 +325,22 @@ namespace UnoGame
             }
         }
 
-        public CardColor ChangeWildCardColor(ICard wildCard, int choice)
-        {
-            switch(choice)
-            {
-                case 1:
-                return CardColor.Red;
-                case 2:
-                return CardColor.Green;
-                case 3:
-                return CardColor.Blue;
-                case 4:
-                return CardColor.Yellow;
-                default:
-                throw new ArgumentException("Invalid Color");
-            }
-        }
+        // public CardColor ChangeWildCardColor(ICard wildCard, int choice)
+        // {
+        //     switch(choice)
+        //     {
+        //         case 1:
+        //         return CardColor.Red;
+        //         case 2:
+        //         return CardColor.Green;
+        //         case 3:
+        //         return CardColor.Blue;
+        //         case 4:
+        //         return CardColor.Yellow;
+        //         default:
+        //         throw new ArgumentException("Invalid Color");
+        //     }
+        // }
 
         private bool IsValidPlayer(IPlayer player)
         {
@@ -359,7 +358,5 @@ namespace UnoGame
             }
             return false; //continue
         }
-
-
     }
 }
