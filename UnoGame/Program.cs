@@ -41,14 +41,14 @@ class Program
     static int InsertNumberOfPlayers()
     {
         int _numberOfPlayers = 0;
-        bool validInput = false;
+        bool _validInput = false;
 
-        while (!validInput)
+        while (!_validInput)
         {
             Console.WriteLine("Enter the numbers of players: ");
             if (int.TryParse(Console.ReadLine(), out _numberOfPlayers) && _numberOfPlayers > 1 && _numberOfPlayers <= 4)
             {
-                validInput = true;
+                _validInput = true;
             }
             else
             {
@@ -63,21 +63,21 @@ class Program
         for (int playerId = 1; playerId <= _numberOfPlayer; playerId++)
         {
             string _playerName;
-            bool isNameTaken;
+            bool _isNameTaken;
 
             do
             {
                 Console.WriteLine($"Enter the name for Player {playerId}");
                 _playerName = Console.ReadLine();
 
-                isNameTaken = gameController.IsPlayerNameTaken(_playerName);
+                _isNameTaken = gameController.IsPlayerNameTaken(_playerName);
 
-                if (isNameTaken)
+                if (_isNameTaken)
                 {
                     Console.WriteLine("Player name is already taken. Please choose a different name.");
                 }
 
-            } while (isNameTaken);
+            } while (_isNameTaken);
 
             gameController.AddPlayer(new Player(playerId, _playerName));
         }
