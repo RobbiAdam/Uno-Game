@@ -12,8 +12,6 @@ namespace UnoGame
             set => _cardColor = value;
         }
 
-
-
         public CardValue CardValue
         {
             get => _cardValue;

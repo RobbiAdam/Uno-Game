@@ -154,28 +154,22 @@ namespace UnoGame
         {
             PlayerData playerData = GetPlayerData(player);
 
+
             if (playerData == null || !IsCardValidToDiscard(card))
             {
                 return false;
             }
 
-            //  if (IsWildCard(card))
-            // {
-            //     HandleWildCard(card, choice);
-            // }
-
             if (IsActionCard(card))
             {
-                HandleActionCard(card);
+                HandleActionCard(card, choice);
             }
-
             playerData.HandCard.Remove(card);
+
             _discardPileList.Add(card);
 
             return true;
         }
-
-
         public bool IsCardValidToDiscard(ICard card)
         {
             ICard topDiscardCard = _discardPileList.Last();
@@ -187,11 +181,9 @@ namespace UnoGame
 
             return card.CardColor == topDiscardCard.CardColor || card.CardValue == topDiscardCard.CardValue;
         }
-
-
         public bool IsActionCard(ICard card)
         {
-            CardValue[] _actionCardValues = { CardValue.Skip, CardValue.Reverse, CardValue.DrawTwo, };
+            CardValue[] _actionCardValues = { CardValue.Skip, CardValue.Reverse, CardValue.DrawTwo, CardValue.Wild, CardValue.WildDrawFour };
 
             return _actionCardValues.Contains(card.CardValue);
         }
@@ -201,7 +193,7 @@ namespace UnoGame
             return _wildCardValues.Contains(card.CardValue);
         }
 
-        private CardValue HandleActionCard(ICard card)
+        private CardValue HandleActionCard(ICard card, int choice)
         {
             switch (card.CardValue)
             {
@@ -215,30 +207,18 @@ namespace UnoGame
                     DrawTwoCardsNextPlayer();
                     SkipNextPlayer();
                     return CardValue.DrawTwo;
-
+                case CardValue.Wild:
+                    ChangeWildCardColor(card, choice);
+                    return CardValue.Wild;
+                case CardValue.WildDrawFour:
+                    ChangeWildCardColor(card, choice);
+                    DrawFourCardsNextPlayer();
+                    SkipNextPlayer();
+                    return CardValue.WildDrawFour;
                 default:
                     throw new ArgumentException("Invalid Action Card");
             }
         }
-
-        // public void  HandleWildCard(ICard card, int choice)
-        // {
-        //     switch (card.CardValue)
-        //     {
-        //         case CardValue.Wild:
-        //             card.CardColor = ChangeWildCardColor(card, choice);
-        //             break;
-        //         case CardValue.WildDrawFour:
-        //             ChangeWildCardColor(card, choice);
-        //             DrawFourCardsNextPlayer();
-        //             SkipNextPlayer();
-        //             break;
-
-        //         default:
-        //             throw new ArgumentException("Invalid wild card");
-        //     }
-        // }
-
 
         public ICard InitialDiscardPile()
         {
@@ -324,24 +304,6 @@ namespace UnoGame
                 }
             }
         }
-
-        // public CardColor ChangeWildCardColor(ICard wildCard, int choice)
-        // {
-        //     switch(choice)
-        //     {
-        //         case 1:
-        //         return CardColor.Red;
-        //         case 2:
-        //         return CardColor.Green;
-        //         case 3:
-        //         return CardColor.Blue;
-        //         case 4:
-        //         return CardColor.Yellow;
-        //         default:
-        //         throw new ArgumentException("Invalid Color");
-        //     }
-        // }
-
         private bool IsValidPlayer(IPlayer player)
         {
             return _playerDataList.Any(playerData => playerData.Player == player);
@@ -358,5 +320,26 @@ namespace UnoGame
             }
             return false; //continue
         }
+        public CardColor ChangeWildCardColor(ICard card, int choice)
+        {
+            if (card.IsWild)
+            {
+                switch (choice)
+                {
+                    case 1:
+                        return CardColor.Red;
+                    case 2:
+                        return CardColor.Green;
+                    case 3:
+                        return CardColor.Blue;
+                    case 4:
+                        return CardColor.Yellow;
+
+                }
+            }
+            return CardColor.Blank; // Change this to your default behavior.
+        }
+
+
     }
 }

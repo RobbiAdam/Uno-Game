@@ -5,7 +5,6 @@ class Program
     static int _numberOfPlayer;
     static GameController gameController = new();
     static bool _gameStatus = false;
-
     static void Main()
     {
         SetupGame();
@@ -31,9 +30,7 @@ class Program
             Console.WriteLine("");
             gameController.NextPlayerTurn();
         }
-
     }
-
     static void EndGame()
     {
         Console.WriteLine("Game over!");
@@ -194,7 +191,7 @@ class Program
                         }
                         break;
                     case 3:
-                    Console.WriteLine($"{currentPlayer.PlayerName}'s ending their turn");
+                        Console.WriteLine($"{currentPlayer.PlayerName}'s ending their turn");
                         return;
                     case 4:
                         _gameStatus = true; // End Game
@@ -226,7 +223,7 @@ class Program
         Console.WriteLine("");
         Console.WriteLine($"{player.PlayerName}, choose a card to discard:");
         DisplayTopCardOnDiscardPile();
-        
+
 
         for (int i = 0; i < handCards.Count; i++)
         {
@@ -241,15 +238,17 @@ class Program
 
             if (gameController.IsCardValidToDiscard(selectedCard))
             {
-                gameController.DiscardCard(player, selectedCard, choice);
-                Console.WriteLine($"{player.PlayerName} discarded: {GetCardDescription(selectedCard)}");
-
+                if (gameController.IsWildCard(selectedCard))
+                {
+                    DisplayWildCardMessage(selectedCard);
+                }
                 if (gameController.IsActionCard(selectedCard))
                 {
                     Console.WriteLine($"{player.PlayerName} discarded an action card!");
                     DisplayActionCardMessage(selectedCard, player.PlayerName);
                 }
-
+                gameController.DiscardCard(player, selectedCard, choice);
+                Console.WriteLine($"{player.PlayerName} discarded: {GetCardDescription(selectedCard)}");
                 return true;
             }
             else
@@ -278,11 +277,40 @@ class Program
                 Console.WriteLine($"Next Player draws two cards and their turn is skipped.");
                 break;
             default:
-
                 Console.WriteLine($"Action card played by {playerName}: {card.CardValue}");
                 break;
         }
     }
 
+    static int GetColorChoiceFromUser()
+    {
+        int userInput;
+        do
+        {
+            Console.WriteLine("Choose a color (1 for Red, 2 for Green, 3 for Blue, 4 for Yellow): ");
+        } while (!int.TryParse(Console.ReadLine(), out userInput) || userInput < 1 || userInput > 4);
 
+        switch (userInput)
+        {
+            case 1:
+                return 1; // Red
+            case 2:
+                return 2; // Green
+            case 3:
+                return 3; // Blue
+            case 4:
+                return 4; // Yellow
+            default:
+                throw new ArgumentException("Invalid input choice");
+        }
+    }
+
+    static void DisplayWildCardMessage(ICard card)
+    {
+        int _colorChoice = GetColorChoiceFromUser();
+        CardColor newColor = gameController.ChangeWildCardColor(card, _colorChoice);
+        card.CardColor = newColor;
+        Console.WriteLine($"Wild card color is changed to {newColor}");
+
+    }
 }

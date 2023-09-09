@@ -2,11 +2,12 @@ namespace UnoGame;
 
 public enum CardColor
 {
-    Blank = 0,
-    Red,
-    Green,
-    Blue,
-    Yellow
+    
+    Red ,
+    Green ,
+    Blue ,
+    Yellow ,
+    Blank
 }
 
 public enum CardValue
