@@ -13,8 +13,6 @@ namespace UnoGame
         private int _defaultStartingHand = 7;
         private int _drawTwo = 2;
         private int _drawFour = 4;
-
-
         public GameController()
         {
             _playerDataList = new List<PlayerData>();
@@ -44,7 +42,7 @@ namespace UnoGame
         }
 
 
-        private IPlayer GetNextPlayer()
+        public IPlayer GetNextPlayer()
         {
             if (_playerDataList.Count == 0)
             {
@@ -63,16 +61,16 @@ namespace UnoGame
             return _playerDataList[nextPlayerIndex].Player;
         }
 
-        public ICard DrawCard()
+        private ICard DrawCard()
         {
-            ICard generatedCard = null;
+            ICard _generatedCard = null;
             do
             {
-                generatedCard = GenerateCard();
+                _generatedCard = GenerateCard();
             }
-            while (!IsCardValidToGenerate(generatedCard));
+            while (!IsCardValidToGenerate(_generatedCard));
 
-            return generatedCard;
+            return _generatedCard;
         }
 
         private int GetMaxCopiesAllowed(CardValue cardValue)
@@ -88,63 +86,63 @@ namespace UnoGame
                     return 2;
             }
         }
-        public bool IsCardValidToGenerate(ICard card)
+        private bool IsCardValidToGenerate(ICard card)
         {
-            int maxCopiesAllowed = GetMaxCopiesAllowed(card.CardValue);
+            int _maxCopiesAllowed = GetMaxCopiesAllowed(card.CardValue);
 
             // Count how many cards with the same value and color exist in all player hands
-            int sameValueAndColorCountInHands = _playerDataList.SelectMany(pd => pd.HandCard)
+            int _sameValueAndColorCountInHands = _playerDataList.SelectMany(pd => pd.HandCard)
                 .Count(c => c.CardValue == card.CardValue && c.CardColor == card.CardColor);
 
             // Count how many cards with the same value and color exist in the discard pile
-            int sameValueAndColorCountInDiscardPile = _discardPileList
+            int _sameValueAndColorCountInDiscardPile = _discardPileList
                 .Count(c => c.CardValue == card.CardValue && c.CardColor == card.CardColor);
 
-            return (sameValueAndColorCountInHands + sameValueAndColorCountInDiscardPile) < maxCopiesAllowed;
+            return (_sameValueAndColorCountInHands + _sameValueAndColorCountInDiscardPile) < _maxCopiesAllowed;
         }
-        public ICard GenerateCard()
+        private ICard GenerateCard()
         {
             Random random = new Random();
-            CardValue randomValue;
-            CardColor randomColor;
-            randomValue = (CardValue)random.Next(Enum.GetValues(typeof(CardValue)).Length);
+            CardValue _randomValue;
+            CardColor _randomColor;
+            _randomValue = (CardValue)random.Next(Enum.GetValues(typeof(CardValue)).Length);
 
-            if (randomValue == CardValue.Wild || randomValue == CardValue.WildDrawFour)
+            if (_randomValue == CardValue.Wild || _randomValue == CardValue.WildDrawFour)
             {
 
-                return new Card { CardValue = randomValue, CardColor = CardColor.Blank, IsWild = true };
+                return new Card { CardValue = _randomValue, CardColor = CardColor.Blank, IsWild = true };
             }
             else
             {
                 do
                 {
-                    randomColor = (CardColor)random.Next(Enum.GetValues(typeof(CardColor)).Length);
+                    _randomColor = (CardColor)random.Next(Enum.GetValues(typeof(CardColor)).Length);
                 }
-                while (randomColor == CardColor.Blank);
+                while (_randomColor == CardColor.Blank);
 
-                return new Card { CardColor = randomColor, CardValue = randomValue };
+                return new Card { CardColor = _randomColor, CardValue = _randomValue };
             }
         }
         public void DealStartingHands()
         {
-            foreach (PlayerData playerData in _playerDataList)
+            foreach (PlayerData _playerData in _playerDataList)
             {
                 for (int i = 0; i < _defaultStartingHand; i++)
                 {
-                    ICard drawnCard = DrawCard();
-                    playerData.AddCardToHand(drawnCard);
+                    ICard _drawnCard = DrawCard();
+                    _playerData.AddCardToHand(_drawnCard);
                 }
             }
         }
 
         public ICard DrawCardToPlayerHand(IPlayer player)
         {
-            PlayerData playerData = GetPlayerData(player);
+            PlayerData _playerData = GetPlayerData(player);
 
-            if (playerData != null)
+            if (_playerData != null)
             {
                 ICard drawnCard = DrawCard();
-                playerData.AddCardToHand(drawnCard);
+                _playerData.AddCardToHand(drawnCard);
                 return drawnCard;
             }
             return null; //
@@ -152,10 +150,10 @@ namespace UnoGame
 
         public bool DiscardCard(IPlayer player, ICard card, int choice)
         {
-            PlayerData playerData = GetPlayerData(player);
+            PlayerData _playerData = GetPlayerData(player);
 
 
-            if (playerData == null || !IsCardValidToDiscard(card))
+            if (_playerData == null || !IsCardValidToDiscard(card))
             {
                 return false;
             }
@@ -164,7 +162,7 @@ namespace UnoGame
             {
                 HandleActionCard(card, choice);
             }
-            playerData.HandCard.Remove(card);
+            _playerData.HandCard.Remove(card);
 
             _discardPileList.Add(card);
 
@@ -172,14 +170,14 @@ namespace UnoGame
         }
         public bool IsCardValidToDiscard(ICard card)
         {
-            ICard topDiscardCard = _discardPileList.Last();
+            ICard _topDiscardCard = _discardPileList.Last();
 
             if (card.IsWild)
             {
                 return true;
             }
 
-            return card.CardColor == topDiscardCard.CardColor || card.CardValue == topDiscardCard.CardValue;
+            return card.CardColor == _topDiscardCard.CardColor || card.CardValue == _topDiscardCard.CardValue;
         }
         public bool IsActionCard(ICard card)
         {
@@ -222,16 +220,16 @@ namespace UnoGame
 
         public ICard InitialDiscardPile()
         {
-            ICard drawnCard;
+            ICard _drawnCard;
 
             do
             {
-                drawnCard = DrawCard();
-            } while (drawnCard.IsWild);
+                _drawnCard = DrawCard();
+            } while (_drawnCard.IsWild);
 
-            _discardPileList.Add(drawnCard);
+            _discardPileList.Add(_drawnCard);
 
-            return drawnCard;
+            return _drawnCard;
         }
         public IPlayer GetPlayerTurn()
         {
@@ -262,45 +260,45 @@ namespace UnoGame
             PlayerData nextPlayerData = _playerDataList[_currentPlayerIndex];
             return nextPlayerData.Player;
         }
-        public bool ReverseTurnDirection()
+        private bool ReverseTurnDirection()
         {
             _isReversed = !_isReversed;
             return _isReversed;
         }
-        public IPlayer SkipNextPlayer()
+        private IPlayer SkipNextPlayer()
         {
-            IPlayer nextPlayer = GetNextPlayer();
+            IPlayer _nextPlayer = GetNextPlayer();
 
-            if (IsValidPlayer(nextPlayer))
+            if (IsValidPlayer(_nextPlayer))
             {
                 NextPlayerTurn(); // Skip the next player
             }
 
-            return nextPlayer;
+            return _nextPlayer;
         }
-        public void DrawTwoCardsNextPlayer()
+        private void DrawTwoCardsNextPlayer()
         {
-            IPlayer nextPlayer = GetNextPlayer();
+            IPlayer _nextPlayer = GetNextPlayer();
 
-            if (IsValidPlayer(nextPlayer))
+            if (IsValidPlayer(_nextPlayer))
             {
                 for (int i = 0; i < _drawTwo; i++)
                 {
                     ICard drawnCard = DrawCard();
-                    GetPlayerData(nextPlayer).AddCardToHand(drawnCard);
+                    GetPlayerData(_nextPlayer).AddCardToHand(drawnCard);
                 }
             }
         }
-        public void DrawFourCardsNextPlayer()
+        private void DrawFourCardsNextPlayer()
         {
-            IPlayer nextPlayer = GetNextPlayer();
+            IPlayer _nextPlayer = GetNextPlayer();
 
-            if (IsValidPlayer(nextPlayer))
+            if (IsValidPlayer(_nextPlayer))
             {
                 for (int i = 0; i < _drawFour; i++)
                 {
-                    ICard drawnCard = DrawCard();
-                    GetPlayerData(nextPlayer).AddCardToHand(drawnCard);
+                    ICard _drawnCard = DrawCard();
+                    GetPlayerData(_nextPlayer).AddCardToHand(_drawnCard);
                 }
             }
         }
@@ -339,7 +337,5 @@ namespace UnoGame
             }
             return CardColor.Blank; // Change this to your default behavior.
         }
-
-
     }
 }
