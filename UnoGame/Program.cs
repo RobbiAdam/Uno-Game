@@ -148,6 +148,9 @@ class Program
     static void TakeAction()
     {
         IPlayer _currentPlayer = gameController.GetPlayerTurn();
+        bool _hasDiscarded = gameController.HasDiscarded;
+        bool _canDrawCard = gameController.CanDrawCard();
+        bool _canPlayCard = gameController.HasMatchingCardInHand(_currentPlayer);
 
         if (_currentPlayer == null)
         {
@@ -162,7 +165,7 @@ class Program
             Console.WriteLine("No current player data.");
             return;
         }
-
+        _hasDiscarded = false;
         Console.WriteLine($"{_currentPlayer.PlayerName}'s turn.");
         DisplayCurrentPlayerHand(_currentPlayer.PlayerName, _currentPlayerData.HandCard);
 
@@ -180,19 +183,52 @@ class Program
                 switch (_choice)
                 {
                     case 1:
-                        gameController.DrawCardToPlayerHand(_currentPlayer);
-                        Console.WriteLine($"{_currentPlayer.PlayerName} drew a card.");
-                        DisplayCurrentPlayerHand(_currentPlayer.PlayerName, _currentPlayerData.HandCard);
-                        break;
-                    case 2:
-                        if (ChooseCardToDiscard(_currentPlayer))
+                        if (!_canDrawCard)
                         {
-                            return;
+                            Console.WriteLine("No card to draw");
+                        }
+                        else if (!_canPlayCard && !_hasDiscarded)
+                        {
+                            gameController.DrawCardToPlayerHand(_currentPlayer);
+                            Console.WriteLine($"{_currentPlayer.PlayerName} drew a card.");
+                            DisplayCurrentPlayerHand(_currentPlayer.PlayerName, _currentPlayerData.HandCard);
+                        }
+                        else
+                        {
+                            Console.WriteLine("You cannot draw a card.");
                         }
                         break;
+
+                    case 2:
+                        if (!_hasDiscarded)
+                        {
+                            if (ChooseCardToDiscard(_currentPlayer))
+                            {
+                                _hasDiscarded = true;
+                            }
+                        }
+                        else
+                            Console.WriteLine($"{_currentPlayer.PlayerName} already discard a card");
+                        break;
                     case 3:
-                        Console.WriteLine($"{_currentPlayer.PlayerName}'s ending their turn");
-                        return;
+                        if (!_hasDiscarded)
+                        {
+                            Console.WriteLine("You must discard a card before ending your turn.");
+                        }
+                        else
+                        {
+                            if (!_canPlayCard)
+                            {
+                                Console.WriteLine($"{_currentPlayer.PlayerName} couldn't play any cards and ends their turn.");
+                                return;
+                            }
+                            else
+                            {
+                                Console.WriteLine($"{_currentPlayer.PlayerName}'s ending their turn");
+                                return;
+                            }
+                        }
+                        break;
                     case 4:
                         _gameStatus = true; // End Game
                         return;

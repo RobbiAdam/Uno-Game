@@ -10,9 +10,13 @@ namespace UnoGame
         private List<ICard> _discardPileList;
         private bool _isReversed = false;
         private int _currentPlayerIndex = 0;
-        private int _defaultStartingHand = 7;
+        private int _defaultStartingHand = 5;
         private int _drawTwo = 2;
         private int _drawFour = 4;
+        private bool _hasDiscarded = false;
+        private int _remainingCard = 108;
+
+
         public GameController()
         {
             _playerDataList = new List<PlayerData>();
@@ -29,6 +33,12 @@ namespace UnoGame
         public List<IPlayer> Players
         {
             get { return _playerDataList.Select(playerData => playerData.Player).ToList(); }
+        }
+
+        public bool HasDiscarded
+        {
+            get { return _hasDiscarded; }
+            set { _hasDiscarded = value; }
         }
 
         public PlayerData GetPlayerData(IPlayer player)
@@ -70,7 +80,22 @@ namespace UnoGame
             }
             while (!IsCardValidToGenerate(_generatedCard));
 
+            _remainingCard--;
             return _generatedCard;
+        }
+
+        public bool CanDrawCard()
+        {
+            
+            if(_remainingCard == 0)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+
         }
 
         private int GetMaxCopiesAllowed(CardValue cardValue)
@@ -179,6 +204,29 @@ namespace UnoGame
 
             return card.CardColor == _topDiscardCard.CardColor || card.CardValue == _topDiscardCard.CardValue;
         }
+
+        public bool HasMatchingCardInHand(IPlayer player)
+        {
+            PlayerData _playerData = GetPlayerData(player);
+
+            if (_playerData == null)
+            {
+                return false;
+            }
+
+            ICard _topDiscardCard = DiscardedPile.Last();
+
+            foreach (ICard card in _playerData.HandCard)
+            {
+                if (card.IsWild || card.CardColor == _topDiscardCard.CardColor || card.CardValue == _topDiscardCard.CardValue)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public bool IsActionCard(ICard card)
         {
             CardValue[] _actionCardValues = { CardValue.Skip, CardValue.Reverse, CardValue.DrawTwo, CardValue.Wild, CardValue.WildDrawFour };

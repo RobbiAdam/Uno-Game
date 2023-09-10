@@ -19,10 +19,5 @@ public class PlayerData
     {
         HandCard.Add(card);
     }
-    public IPlayer GetPlayer()
-    {
-        return _player;
-    }
-
 
 }
