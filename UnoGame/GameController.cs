@@ -10,24 +10,69 @@ namespace UnoGame
         private List<ICard> _discardPileList;
         private bool _isReversed = false;
         private int _currentPlayerIndex = 0;
-        private int _defaultStartingHand = 5;
+        private int _defaultStartingHand = 7;
         private int _drawTwo = 2;
         private int _drawFour = 4;
         private bool _hasDiscarded = false;
         private int _remainingCard = 108;
 
+        // ====================
+        // Constructor
+        // ====================
 
         public GameController()
         {
             _playerDataList = new List<PlayerData>();
             _discardPileList = new List<ICard>();
         }
+
+        // ====================
+        // Player Management
+        // ====================
+
         public PlayerData AddPlayer(IPlayer player)
         {
             PlayerData playerData = new PlayerData(player);
             _playerDataList.Add(playerData);
             return playerData;
         }
+        public PlayerData GetPlayerData(IPlayer player)
+        {
+            return _playerDataList.FirstOrDefault(pd => pd.Player == player);
+        }
+        public bool IsPlayerNameTaken(string playerName)
+        {
+            return _playerDataList.Any(playerData => playerData.Player.PlayerName == playerName);
+        }
+        // ====================
+        // Game Initialization
+        // ====================
+        public void DealStartingHands()
+        {
+            foreach (PlayerData _playerData in _playerDataList)
+            {
+                for (int i = 0; i < _defaultStartingHand; i++)
+                {
+                    ICard _drawnCard = DrawCard();
+                    _playerData.AddCardToHand(_drawnCard);
+                }
+            }
+        }
+        public ICard InitialDiscardPile()
+        {
+            ICard _drawnCard;
+            do
+            {
+                _drawnCard = DrawCard();
+            } while (_drawnCard.IsWild);
+
+            _discardPileList.Add(_drawnCard);
+
+            return _drawnCard;
+        }
+        // ====================
+        // Properties and Lists
+        // ====================
         public List<ICard> DiscardedPile => _discardPileList;
 
         public List<IPlayer> Players
@@ -40,37 +85,9 @@ namespace UnoGame
             get { return _hasDiscarded; }
             set { _hasDiscarded = value; }
         }
-
-        public PlayerData GetPlayerData(IPlayer player)
-        {
-            return _playerDataList.FirstOrDefault(pd => pd.Player == player);
-        }
-
-        public bool IsPlayerNameTaken(string playerName)
-        {
-            return _playerDataList.Any(playerData => playerData.Player.PlayerName == playerName);
-        }
-
-
-        public IPlayer GetNextPlayer()
-        {
-            if (_playerDataList.Count == 0)
-            {
-                return null;
-            }
-            int nextPlayerIndex;
-            if (!_isReversed)
-            {
-                nextPlayerIndex = (_currentPlayerIndex + 1) % _playerDataList.Count;
-            }
-            else
-            {
-                nextPlayerIndex = (_currentPlayerIndex - 1 + _playerDataList.Count) % _playerDataList.Count;
-            }
-
-            return _playerDataList[nextPlayerIndex].Player;
-        }
-
+        // ====================
+        // Card Management
+        // ====================
         private ICard DrawCard()
         {
             ICard _generatedCard = null;
@@ -83,11 +100,9 @@ namespace UnoGame
             _remainingCard--;
             return _generatedCard;
         }
-
         public bool CanDrawCard()
         {
-            
-            if(_remainingCard == 0)
+            if (_remainingCard == 0)
             {
                 return false;
             }
@@ -95,9 +110,7 @@ namespace UnoGame
             {
                 return true;
             }
-
         }
-
         private int GetMaxCopiesAllowed(CardValue cardValue)
         {
             switch (cardValue)
@@ -148,51 +161,7 @@ namespace UnoGame
                 return new Card { CardColor = _randomColor, CardValue = _randomValue };
             }
         }
-        public void DealStartingHands()
-        {
-            foreach (PlayerData _playerData in _playerDataList)
-            {
-                for (int i = 0; i < _defaultStartingHand; i++)
-                {
-                    ICard _drawnCard = DrawCard();
-                    _playerData.AddCardToHand(_drawnCard);
-                }
-            }
-        }
 
-        public ICard DrawCardToPlayerHand(IPlayer player)
-        {
-            PlayerData _playerData = GetPlayerData(player);
-
-            if (_playerData != null)
-            {
-                ICard drawnCard = DrawCard();
-                _playerData.AddCardToHand(drawnCard);
-                return drawnCard;
-            }
-            return null; //
-        }
-
-        public bool DiscardCard(IPlayer player, ICard card, int choice)
-        {
-            PlayerData _playerData = GetPlayerData(player);
-
-
-            if (_playerData == null || !IsCardValidToDiscard(card))
-            {
-                return false;
-            }
-
-            if (IsActionCard(card))
-            {
-                HandleActionCard(card, choice);
-            }
-            _playerData.HandCard.Remove(card);
-
-            _discardPileList.Add(card);
-
-            return true;
-        }
         public bool IsCardValidToDiscard(ICard card)
         {
             ICard _topDiscardCard = _discardPileList.Last();
@@ -204,7 +173,6 @@ namespace UnoGame
 
             return card.CardColor == _topDiscardCard.CardColor || card.CardValue == _topDiscardCard.CardValue;
         }
-
         public bool HasMatchingCardInHand(IPlayer player)
         {
             PlayerData _playerData = GetPlayerData(player);
@@ -213,7 +181,6 @@ namespace UnoGame
             {
                 return false;
             }
-
             ICard _topDiscardCard = DiscardedPile.Last();
 
             foreach (ICard card in _playerData.HandCard)
@@ -223,7 +190,6 @@ namespace UnoGame
                     return true;
                 }
             }
-
             return false;
         }
 
@@ -238,7 +204,6 @@ namespace UnoGame
             CardValue[] _wildCardValues = { CardValue.Wild, CardValue.WildDrawFour };
             return _wildCardValues.Contains(card.CardValue);
         }
-
         private CardValue HandleActionCard(ICard card, int choice)
         {
             switch (card.CardValue)
@@ -265,19 +230,46 @@ namespace UnoGame
                     throw new ArgumentException("Invalid Action Card");
             }
         }
-
-        public ICard InitialDiscardPile()
+        public CardColor ChangeWildCardColor(ICard card, int choice)
         {
-            ICard _drawnCard;
-
-            do
+            if (card.IsWild)
             {
-                _drawnCard = DrawCard();
-            } while (_drawnCard.IsWild);
+                switch (choice)
+                {
+                    case 1:
+                        return CardColor.Red;
+                    case 2:
+                        return CardColor.Green;
+                    case 3:
+                        return CardColor.Blue;
+                    case 4:
+                        return CardColor.Yellow;
 
-            _discardPileList.Add(_drawnCard);
+                }
+            }
+            return CardColor.Blank; // Change this to your default behavior.
+        }
+        // ====================
+        // Player Turn Management:
+        // ====================
 
-            return _drawnCard;
+        public IPlayer GetNextPlayer()
+        {
+            if (_playerDataList.Count == 0)
+            {
+                return null;
+            }
+            int nextPlayerIndex;
+            if (!_isReversed)
+            {
+                nextPlayerIndex = (_currentPlayerIndex + 1) % _playerDataList.Count;
+            }
+            else
+            {
+                nextPlayerIndex = (_currentPlayerIndex - 1 + _playerDataList.Count) % _playerDataList.Count;
+            }
+
+            return _playerDataList[nextPlayerIndex].Player;
         }
         public IPlayer GetPlayerTurn()
         {
@@ -295,7 +287,6 @@ namespace UnoGame
             {
                 return null;
             }
-
             if (!_isReversed)
             {
                 _currentPlayerIndex = (_currentPlayerIndex + 1) % _playerDataList.Count;
@@ -354,7 +345,9 @@ namespace UnoGame
         {
             return _playerDataList.Any(playerData => playerData.Player == player);
         }
-
+        // ====================
+        // Game State:
+        // ====================
         public bool IsGameOver()
         {
             foreach (PlayerData playerData in _playerDataList)
@@ -366,24 +359,38 @@ namespace UnoGame
             }
             return false; //continue
         }
-        public CardColor ChangeWildCardColor(ICard card, int choice)
+        // ====================
+        // Discard and Draw Actions:
+        // ====================
+        public ICard DrawCardToPlayerHand(IPlayer player)
         {
-            if (card.IsWild)
-            {
-                switch (choice)
-                {
-                    case 1:
-                        return CardColor.Red;
-                    case 2:
-                        return CardColor.Green;
-                    case 3:
-                        return CardColor.Blue;
-                    case 4:
-                        return CardColor.Yellow;
+            PlayerData _playerData = GetPlayerData(player);
 
-                }
+            if (_playerData != null)
+            {
+                ICard drawnCard = DrawCard();
+                _playerData.AddCardToHand(drawnCard);
+                return drawnCard;
             }
-            return CardColor.Blank; // Change this to your default behavior.
+            return null; //
+        }
+        public bool DiscardCard(IPlayer player, ICard card, int choice)
+        {
+            PlayerData _playerData = GetPlayerData(player);
+
+            if (_playerData == null || !IsCardValidToDiscard(card))
+            {
+                return false;
+            }
+            if (IsActionCard(card))
+            {
+                HandleActionCard(card, choice);
+            }
+            _playerData.HandCard.Remove(card);
+
+            _discardPileList.Add(card);
+
+            return true;
         }
     }
 }

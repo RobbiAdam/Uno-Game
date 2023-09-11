@@ -20,10 +20,12 @@ public interface IPlayer
     int PlayerId
     {
         get;
+        set;
     }
 
     string PlayerName
     {
         get;
+        set;
     }
 }
