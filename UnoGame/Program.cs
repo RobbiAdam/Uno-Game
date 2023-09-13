@@ -1,10 +1,14 @@
-﻿using UnoGame;
+﻿using NLog;
+using UnoGame;
 
 class Program
 {
     static int _numberOfPlayer;
     static GameController gameController = new();
     static bool _gameStatus = false;
+    private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
+    // static private readonly Logger logger = LogManager.GetCurrentClassLogger();
     static void Main()
     {
         SetupGame();
