@@ -10,6 +10,7 @@ public interface ICard
     CardValue CardValue
     {
         get;
+        set;
     }
     bool IsWild { get; }
 
